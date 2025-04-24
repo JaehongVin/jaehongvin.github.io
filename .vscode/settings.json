@@ -3,5 +3,15 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  //* 에디터에 파일 숨김
+  "files.exclude": {
+    "**/.git": true,
+    "**/.gitignore": false,
+    "**/node_modules": true
+  },
+  //* 검색 시 무시
+  "search.useIgnoreFiles": true,
+  //* 탐색기에서 무시
+  "explorer.excludeGitIgnore": true
 }

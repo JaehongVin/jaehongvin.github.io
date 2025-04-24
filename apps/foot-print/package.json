@@ -1,5 +1,5 @@
 {
-  "name": "docs",
+  "name": "@portfolio/foot-print",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -8,17 +8,18 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "compile": "pnpm run typecheck && pnpm run lint"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
+    "@common/ui": "workspace:*",
     "next": "^15.3.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@common/eslint-config": "workspace:*",
+    "@common/typescript-config": "workspace:*",
     "@types/node": "^22.14.0",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",

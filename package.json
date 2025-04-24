@@ -2,11 +2,12 @@
   "name": "portfolio",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "dev:foot-print": "turbo run dev --filter=@portfolio/foot-print",
+    "build:foot-print": "turbo run build --filter=@portfolio/foot-print",
+    "format:foot-print": "prettier --write \"**/*.{ts,tsx,md}\" --filter=@portfolio/foot-print",
+    "lint:foot-print": "turbo run lint --filter=@portfolio/foot-print",
+    "typecheck:foot-print": "turbo run typecheck --filter=@portfolio/foot-print",
+    "compile:foot-print": "turbo run compile --filter=@portfolio/foot-print"
   },
   "devDependencies": {
     "prettier": "^3.5.3",
@@ -14,7 +15,12 @@
     "typescript": "5.8.2"
   },
   "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "author": "jae hong",
   "engines": {
-    "node": ">=18"
+    "node": ">=22.14.0"
   }
 }
