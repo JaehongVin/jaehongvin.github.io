@@ -1,49 +1,29 @@
-import js from "@eslint/js";
-import eslintConfigPrettier from "eslint-config-prettier";
-import tseslint from "typescript-eslint";
-import pluginReactHooks from "eslint-plugin-react-hooks";
-import pluginReact from "eslint-plugin-react";
-import globals from "globals";
-import pluginNext from "@next/eslint-plugin-next";
-import { config as baseConfig } from "./base.js";
+import pluginNext from '@next/eslint-plugin-next';
+import { config as baseConfig } from './base.js';
+import { config as reactConfig } from './react.js';
 
 /**
- * A custom ESLint configuration for libraries that use Next.js.
- *
- * @type {import("eslint").Linter.Config[]}
- * */
-export const nextJsConfig = [
+ * * next.js 관련 설정
+ */
+export const config = [
+  //* 전역 ESLint 설정
   ...baseConfig,
-  js.configs.recommended,
-  eslintConfigPrettier,
-  ...tseslint.configs.recommended,
+
+  //* React 관련 설정
+  ...reactConfig,
+
   {
-    ...pluginReact.configs.flat.recommended,
-    languageOptions: {
-      ...pluginReact.configs.flat.recommended.languageOptions,
-      globals: {
-        ...globals.serviceworker,
-      },
-    },
-  },
-  {
+    //* Next.js 플러그인 설정
     plugins: {
-      "@next/next": pluginNext,
+      //* Next.js ESLint 플러그인 추가
+      '@next/next': pluginNext,
     },
+    //* Next.js 관련 규칙 설정
     rules: {
+      //* Next.js 권장 규칙 적용
       ...pluginNext.configs.recommended.rules,
-      ...pluginNext.configs["core-web-vitals"].rules,
-    },
-  },
-  {
-    plugins: {
-      "react-hooks": pluginReactHooks,
-    },
-    settings: { react: { version: "detect" } },
-    rules: {
-      ...pluginReactHooks.configs.recommended.rules,
-      // React scope no longer necessary with new JSX transform.
-      "react/react-in-jsx-scope": "off",
+      //* Core Web Vitals 관련 규칙 적용
+      ...pluginNext.configs['core-web-vitals'].rules,
     },
   },
 ];
