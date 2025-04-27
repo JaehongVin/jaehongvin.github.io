@@ -3,21 +3,26 @@
   "ui": "tui",
   "tasks": {
     "build": {
+      "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "lint": {
+      "cache": true,
       "dependsOn": ["^lint"]
     },
     "typecheck": {
+      "cache": true,
       "dependsOn": ["^typecheck"]
     },
     "dev": {
-      "cache": false,
+      "dependsOn": ["^dev"],
+      "cache": true,
       "persistent": true
     },
     "compile": {
+      "cache": true,
       "dependsOn": ["^compile"],
       "outputs": []
     }

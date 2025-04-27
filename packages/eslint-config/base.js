@@ -17,7 +17,7 @@ export const config = [
   //* TypeScript 권장 규칙 적용
   ...tseslint.configs.recommended,
 
-  //* Turborepo 관련 규칙 설정
+  //* 터보레포 관련 규칙 설정
   {
     plugins: {
       //* turbo 플러그인
@@ -39,5 +39,20 @@ export const config = [
   //* dist 폴더 내 파일들은 린트 검사에서 제외
   {
     ignores: ['dist/**'],
+  },
+
+  {
+    //* 정의되어 있지 않은 Tailwind CSS 클래스 사용시 경고 비활성화
+    rules: {
+      'tailwindcss/no-custom-classname': 'off',
+    },
+    settings: {
+      tailwindcss: {
+        //* Tailwind CSS 클래스 속성
+        classAttributes: ['class', 'className', 'cn'],
+        //* Tailwind CSS 클래스 호출 함수
+        callees: ['cn', 'clsx', 'twMerge'],
+      },
+    },
   },
 ];

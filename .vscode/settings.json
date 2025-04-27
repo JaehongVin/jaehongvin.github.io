@@ -1,17 +1,40 @@
 {
+  //* ESLint 설정
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
+  //* 저장 시 자동 포맷팅
+  "editor.formatOnSave": true,
   //* 에디터에 파일 숨김
-  "files.exclude": {
-    "**/.git": true,
-    "**/.gitignore": false,
-    "**/node_modules": true
-  },
+  // "files.exclude": {
+  //   "**/.git": true,
+  //   "**/.gitignore": false,
+  //   "**/node_modules": true
+  // },
   //* 검색 시 무시
-  "search.useIgnoreFiles": true,
+  // "search.useIgnoreFiles": true,
   //* 탐색기에서 무시
-  "explorer.excludeGitIgnore": true
+  // "explorer.excludeGitIgnore": true
+  //* 철자 검사 무시
+  "cSpell.words": ["callees"],
+  //* cva, cx, cn, clsx 등 함수 안의 Tailwind 클래스도 자동완성 지원
+  "tailwindCSS.experimental.classRegex": [
+    [
+      "cva\\(([^)(]*(?:\\([^)(]*(?:\\([^)(]*(?:\\([^)(]*\\)[^)(]*)*\\)[^)(]*)*\\)[^)(]*)*)\\)",
+      "'([^']*)'"
+    ],
+    [
+      "cva\\(([^)(]*(?:\\([^)(]*(?:\\([^)(]*(?:\\([^)(]*\\)[^)(]*)*\\)[^)(]*)*\\)[^)(]*)*)\\)",
+      "\"([^\"]*)\""
+    ],
+    [
+      "cva\\(([^)(]*(?:\\([^)(]*(?:\\([^)(]*(?:\\([^)(]*\\)[^)(]*)*\\)[^)(]*)*\\)[^)(]*)*)\\)",
+      "`([^`]*)`"
+    ],
+    ["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cn\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["clsx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ]
 }
