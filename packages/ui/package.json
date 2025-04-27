@@ -3,24 +3,33 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    "./components/*": "./src/components/*.tsx",
+    "./globals.css": "./src/styles/globals.css",
+    "./postcss.config": "./postcss.config.mjs",
+    "./lib/*": "./src/lib/*.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "compile": "pnpm run typecheck && pnpm run lint"
   },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.2.0"
+  },
   "devDependencies": {
     "@common/eslint-config": "workspace:*",
     "@common/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^22.14.0",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
+    "class-variance-authority": "^0.7.1",
     "eslint": "^9.25.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.4",
     "typescript": "5.8.2"
-  },
-  "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
   }
 }

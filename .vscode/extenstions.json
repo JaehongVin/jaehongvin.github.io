@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "csstools.postcss",
+    "aaron-bond.better-comments",
+    "streetsidesoftware.code-spell-checker",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
+  ]
+}
