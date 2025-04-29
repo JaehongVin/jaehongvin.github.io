@@ -3,7 +3,7 @@ import { Test2 } from '@common/ui/components/Test2';
 
 export default function HomePage() {
   return (
-    <section className="lg:w-1">
+    <section>
       <Test2 />
       <Test />
     </section>

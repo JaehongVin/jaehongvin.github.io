@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+
+/** TODO 임시 해결. ui 컴포넌트에 기본적으로 현재 파일 적용시킬 다른 방법 찾기 */
+@source "../../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";

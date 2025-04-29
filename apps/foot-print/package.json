@@ -21,6 +21,7 @@
   "devDependencies": {
     "@common/eslint-config": "workspace:*",
     "@common/typescript-config": "workspace:*",
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^22.14.0",
     "@types/react": "19.1.0",

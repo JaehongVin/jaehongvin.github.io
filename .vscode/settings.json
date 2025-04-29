@@ -19,7 +19,7 @@
   // "explorer.excludeGitIgnore": true,
 
   //* 철자 검사 무시
-  "cSpell.words": ["callees"],
+  "cSpell.words": ["callees", "turbopack"],
 
   //* cva, cx, cn, clsx 등 함수 안의 Tailwind 클래스도 자동완성 지원
   "tailwindCSS.experimental.classRegex": [
