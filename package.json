@@ -8,7 +8,8 @@
     "lint:foot-print": "turbo run lint --filter=@portfolio/foot-print",
     "typecheck:foot-print": "turbo run typecheck --filter=@portfolio/foot-print",
     "compile:foot-print": "turbo run compile --filter=@portfolio/foot-print",
-    "compile:common-ui": "turbo run compile --filter=@common/ui"
+    "compile:common-ui": "turbo run compile --filter=@common/ui",
+    "clean": "find . -type d \\( -name '.turbo' -o -name '.next' -o -name 'node_modules' \\) -prune -exec rm -rf {} +"
   },
   "devDependencies": {
     "prettier": "^3.5.3",
