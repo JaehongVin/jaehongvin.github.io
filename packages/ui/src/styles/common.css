@@ -1,4 +1,72 @@
-@import 'tailwindcss';
-
-/** TODO 임시 해결. ui 컴포넌트에 기본적으로 현재 파일 적용시킬 다른 방법 찾기 */
+/** ui 컴포넌트에 전역적으로 적용 및 터보레포환경 tailwind 적용 안되는 오류 용도 */
 @source "../../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
+
+@import 'tailwindcss';
+@import 'pretendard/dist/web/static/pretendard.css';
+
+@layer base {
+  html {
+    @apply text-[12px];
+  }
+
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', Arial, sans-serif;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input {
+    border: none;
+    background: none;
+    outline: none;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  ul,
+  ol,
+  li {
+    list-style: none;
+  }
+}
+
+@layer utilities {
+  .flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+@theme {
+  /** 테블릿 뷰포트 너비 */
+  --breakpoint-tb: 768px;
+  /** 데스크탑 뷰포트 너비 */
+  --breakpoint-dt: 1280px;
+}
+
+/** font-size, line-height, font-weight 사용 할 수 있게. 디자인 토큰 */
+/** px -> rem 단위 */

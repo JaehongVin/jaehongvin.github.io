@@ -6,6 +6,7 @@ export default function HomePage() {
     <section>
       <Test2 />
       <Test />
+      <p>이건 오리지날</p>
     </section>
   );
 }
