@@ -6,7 +6,7 @@ export default function HomePage() {
     <section>
       <Test2 />
       <Test />
-      <p>이건 오리지날</p>
+      <div className="m-12">이건 오리지날 폰트 사이즈</div>
     </section>
   );
 }

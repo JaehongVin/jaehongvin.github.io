@@ -1,3 +1,7 @@
 export const Test = () => {
-  return <div className="w-4 text-red-500">Test</div>;
+  return (
+    <div className="px-12 text-red-500">
+      <h1>asd</h1>
+    </div>
+  );
 };

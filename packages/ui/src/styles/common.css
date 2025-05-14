@@ -4,9 +4,14 @@
 @import 'tailwindcss';
 @import 'pretendard/dist/web/static/pretendard.css';
 
+:root {
+  /** .vscode/settings.json 에서 tailwindCSS.rootFontSize 설정 값과 동일하게 해야함 */
+  --root-font-size: 12;
+}
+
 @layer base {
   html {
-    @apply text-[12px];
+    font-size: calc(var(--root-font-size) * 1px);
   }
 
   body {
@@ -44,20 +49,16 @@
   }
 }
 
-@layer utilities {
-  .flex-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+@utility flex-center {
+  @apply flex items-center justify-center;
+}
 
-  .hide-scrollbar {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
+  &::-webkit-scrollbar {
+    @apply hidden;
   }
 }
 
@@ -66,7 +67,8 @@
   --breakpoint-tb: 768px;
   /** 데스크탑 뷰포트 너비 */
   --breakpoint-dt: 1280px;
+  /** tailwind 유틸리티 클래스 unit 값을 px 단위로 작성하고 실제로는 rem 단위로 적용되도록 함 */
+  --spacing: calc(1 / var(--root-font-size) * 1rem);
 }
 
-/** font-size, line-height, font-weight 사용 할 수 있게. 디자인 토큰 */
-/** px -> rem 단위 */
+/** font-size, line-height, font-weight 사용 할 수 있게. 작업 필요 */
