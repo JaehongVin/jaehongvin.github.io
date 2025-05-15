@@ -10,13 +10,13 @@
   "editor.formatOnSave": true,
 
   //* 에디터에 파일 숨김
-  // "files.exclude": {
-  //   "**/.git": true,
-  //   "**/.gitignore": false,
-  //   "**/node_modules": true
-  // },
-  // "search.useIgnoreFiles": true,
-  // "explorer.excludeGitIgnore": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.gitignore": false,
+    "**/node_modules": true
+  },
+  "search.useIgnoreFiles": true,
+  "explorer.excludeGitIgnore": true,
 
   //* 철자 검사 무시
   "cSpell.words": ["callees", "turbopack"],
