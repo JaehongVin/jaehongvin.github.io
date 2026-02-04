@@ -14,19 +14,19 @@
   "dependencies": {
     "@common/ui": "workspace:*",
     "next": "^16.1.6",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@common/eslint-config": "workspace:*",
     "@common/typescript-config": "workspace:*",
     "@svgr/webpack": "^8.1.0",
-    "@tailwindcss/postcss": "^4.1.4",
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
+    "@tailwindcss/postcss": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "eslint": "^9.25.0",
-    "tailwindcss": "^4.1.4",
-    "typescript": "5.8.2"
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
   }
 }
