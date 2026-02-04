@@ -17,13 +17,16 @@
     "typescript": "5.8.2",
     "prettier-plugin-tailwindcss": "^0.6.11"
   },
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.28.2",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "author": "jae hong",
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=24.13.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp"]
   }
 }
