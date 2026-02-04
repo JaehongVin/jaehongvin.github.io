@@ -1,12 +1,14 @@
 @import "tailwindcss";
 @import "pretendard/dist/web/static/pretendard.css";
 
-/** ui 컴포넌트에 전역적으로 적용 및 터보레포환경 tailwind 적용 안되는 오류 용도 */
+/** Tailwind 가 외부 패키지를 자동 스캔하지 않는 문제 해결 */
+/* @see https://tailwindcss.com/docs/detecting-classes-in-source-files#explicitly-registering-sources */
 @source "../../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
 
 :root {
-  /** .vscode/settings.json 에서 tailwindCSS.rootFontSize 설정 값과 동일하게 해야함 */
+  /** .vscode/settings.json 의 tailwindCSS.rootFontSize 와 동일하게 설정 */
   --root-font-size: 12;
+  --px-to-rem: calc(1 / var(--root-font-size) * 1rem);
 }
 
 @layer base {
@@ -49,27 +51,47 @@
   }
 }
 
-@utility flex-center {
-  @apply flex items-center justify-center;
-}
-
+/** 조합 유틸리티 */
+@utility flex-center { @apply flex items-center justify-center; }
 @utility hide-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    @apply hidden;
-  }
+  &::-webkit-scrollbar { @apply hidden; }
 }
 
-@theme {
-  /** 테블릿 뷰포트 너비 */
-  --breakpoint-tb: 768px;
+/** px → rem 변환 유틸리티 */
+/* Typography */
+@utility text-px-* { font-size: calc(--value(integer) * var(--px-to-rem)); }
+@utility leading-px-* { line-height: calc(--value(integer) * var(--px-to-rem)); }
+@utility tracking-px-* { letter-spacing: calc(--value(integer) * var(--px-to-rem)); }
+/* Spacing (gap, inset) */
+@utility gap-px-* { gap: calc(--value(integer) * var(--px-to-rem)); }
+@utility gap-x-px-* { column-gap: calc(--value(integer) * var(--px-to-rem)); }
+@utility gap-y-px-* { row-gap: calc(--value(integer) * var(--px-to-rem)); }
+/* Positioning */
+@utility top-px-* { top: calc(--value(integer) * var(--px-to-rem)); }
+@utility right-px-* { right: calc(--value(integer) * var(--px-to-rem)); }
+@utility bottom-px-* { bottom: calc(--value(integer) * var(--px-to-rem)); }
+@utility left-px-* { left: calc(--value(integer) * var(--px-to-rem)); }
+@utility inset-px-* { inset: calc(--value(integer) * var(--px-to-rem)); }
+/* Sizing (min/max) */
+@utility min-w-px-* { min-width: calc(--value(integer) * var(--px-to-rem)); }
+@utility max-w-px-* { max-width: calc(--value(integer) * var(--px-to-rem)); }
+@utility min-h-px-* { min-height: calc(--value(integer) * var(--px-to-rem)); }
+@utility max-h-px-* { max-height: calc(--value(integer) * var(--px-to-rem)); }
+@utility size-px-* { width: calc(--value(integer) * var(--px-to-rem)); height: calc(--value(integer) * var(--px-to-rem)); }
+/* Border */
+@utility rounded-px-* { border-radius: calc(--value(integer) * var(--px-to-rem)); }
+@utility border-px-* { border-width: calc(--value(integer) * var(--px-to-rem)); }
+/* Effects */
+@utility blur-px-* { filter: blur(calc(--value(integer) * var(--px-to-rem))); }
 
-  /** 데스크탑 뷰포트 너비 */
+@theme {
+  /** Breakpoints */
+  --breakpoint-tb: 768px;
   --breakpoint-dt: 1280px;
 
-  /** font-weight 값 */
+  /** Font Weight */
   --font-weight-100: 100;
   --font-weight-200: 200;
   --font-weight-300: 300;
@@ -80,100 +102,7 @@
   --font-weight-800: 800;
   --font-weight-900: 900;
 
-  /** tailwind 유틸리티 클래스 unit 값을 px 단위로 작성하고 실제로는 rem 단위로 적용되도록 함 */
-  /** 아래 와일드카드가 아닌 하드코딩으로 적용된 값들 자동화 필요 */
+  /** 간격 스케일 (w-*, h-*, p-*, m-*, gap-* 등에 자동 적용) */
+  /* w-10 = 10px에 해당하는 rem 값 */
   --spacing: calc(1 / var(--root-font-size) * 1rem);
-  /** font-size */
-  --text-1: calc(1 / var(--root-font-size) * 1rem);
-  --text-2: calc(2 / var(--root-font-size) * 1rem);
-  --text-3: calc(3 / var(--root-font-size) * 1rem);
-  --text-4: calc(4 / var(--root-font-size) * 1rem);
-  --text-5: calc(5 / var(--root-font-size) * 1rem);
-  --text-6: calc(6 / var(--root-font-size) * 1rem);
-  --text-7: calc(7 / var(--root-font-size) * 1rem);
-  --text-8: calc(8 / var(--root-font-size) * 1rem);
-  --text-9: calc(9 / var(--root-font-size) * 1rem);
-  --text-10: calc(10 / var(--root-font-size) * 1rem);
-  --text-11: calc(11 / var(--root-font-size) * 1rem);
-  --text-12: calc(12 / var(--root-font-size) * 1rem);
-  --text-13: calc(13 / var(--root-font-size) * 1rem);
-  --text-14: calc(14 / var(--root-font-size) * 1rem);
-  --text-15: calc(15 / var(--root-font-size) * 1rem);
-  --text-16: calc(16 / var(--root-font-size) * 1rem);
-  --text-17: calc(17 / var(--root-font-size) * 1rem);
-  --text-18: calc(18 / var(--root-font-size) * 1rem);
-  --text-19: calc(19 / var(--root-font-size) * 1rem);
-  --text-20: calc(20 / var(--root-font-size) * 1rem);
-  --text-21: calc(21 / var(--root-font-size) * 1rem);
-  --text-22: calc(22 / var(--root-font-size) * 1rem);
-  --text-23: calc(23 / var(--root-font-size) * 1rem);
-  --text-24: calc(24 / var(--root-font-size) * 1rem);
-  --text-25: calc(25 / var(--root-font-size) * 1rem);
-  --text-26: calc(26 / var(--root-font-size) * 1rem);
-  --text-27: calc(27 / var(--root-font-size) * 1rem);
-  --text-28: calc(28 / var(--root-font-size) * 1rem);
-  --text-29: calc(29 / var(--root-font-size) * 1rem);
-  --text-30: calc(30 / var(--root-font-size) * 1rem);
-  /** line-height */
-  --leading-1: calc(1 / var(--root-font-size) * 1rem);
-  --leading-2: calc(2 / var(--root-font-size) * 1rem);
-  --leading-3: calc(3 / var(--root-font-size) * 1rem);
-  --leading-4: calc(4 / var(--root-font-size) * 1rem);
-  --leading-5: calc(5 / var(--root-font-size) * 1rem);
-  --leading-6: calc(6 / var(--root-font-size) * 1rem);
-  --leading-7: calc(7 / var(--root-font-size) * 1rem);
-  --leading-8: calc(8 / var(--root-font-size) * 1rem);
-  --leading-9: calc(9 / var(--root-font-size) * 1rem);
-  --leading-10: calc(10 / var(--root-font-size) * 1rem);
-  --leading-11: calc(11 / var(--root-font-size) * 1rem);
-  --leading-12: calc(12 / var(--root-font-size) * 1rem);
-  --leading-13: calc(13 / var(--root-font-size) * 1rem);
-  --leading-14: calc(14 / var(--root-font-size) * 1rem);
-  --leading-15: calc(15 / var(--root-font-size) * 1rem);
-  --leading-16: calc(16 / var(--root-font-size) * 1rem);
-  --leading-17: calc(17 / var(--root-font-size) * 1rem);
-  --leading-18: calc(18 / var(--root-font-size) * 1rem);
-  --leading-19: calc(19 / var(--root-font-size) * 1rem);
-  --leading-20: calc(20 / var(--root-font-size) * 1rem);
-  --leading-21: calc(21 / var(--root-font-size) * 1rem);
-  --leading-22: calc(22 / var(--root-font-size) * 1rem);
-  --leading-23: calc(23 / var(--root-font-size) * 1rem);
-  --leading-24: calc(24 / var(--root-font-size) * 1rem);
-  --leading-25: calc(25 / var(--root-font-size) * 1rem);
-  --leading-26: calc(26 / var(--root-font-size) * 1rem);
-  --leading-27: calc(27 / var(--root-font-size) * 1rem);
-  --leading-28: calc(28 / var(--root-font-size) * 1rem);
-  --leading-29: calc(29 / var(--root-font-size) * 1rem);
-  --leading-30: calc(30 / var(--root-font-size) * 1rem);
-  --leading-31: calc(31 / var(--root-font-size) * 1rem);
-  --leading-32: calc(32 / var(--root-font-size) * 1rem);
-  --leading-33: calc(33 / var(--root-font-size) * 1rem);
-  --leading-34: calc(34 / var(--root-font-size) * 1rem);
-  --leading-35: calc(35 / var(--root-font-size) * 1rem);
-  --leading-36: calc(36 / var(--root-font-size) * 1rem);
-  --leading-37: calc(37 / var(--root-font-size) * 1rem);
-  --leading-38: calc(38 / var(--root-font-size) * 1rem);
-  --leading-39: calc(39 / var(--root-font-size) * 1rem);
-  --leading-40: calc(40 / var(--root-font-size) * 1rem);
-  /** border-radius */
-  --radius-1: calc(1 / var(--root-font-size) * 1rem);
-  --radius-2: calc(2 / var(--root-font-size) * 1rem);
-  --radius-3: calc(3 / var(--root-font-size) * 1rem);
-  --radius-4: calc(4 / var(--root-font-size) * 1rem);
-  --radius-5: calc(5 / var(--root-font-size) * 1rem);
-  --radius-6: calc(6 / var(--root-font-size) * 1rem);
-  --radius-7: calc(7 / var(--root-font-size) * 1rem);
-  --radius-8: calc(8 / var(--root-font-size) * 1rem);
-  --radius-9: calc(9 / var(--root-font-size) * 1rem);
-  --radius-10: calc(10 / var(--root-font-size) * 1rem);
-  --radius-11: calc(11 / var(--root-font-size) * 1rem);
-  --radius-12: calc(12 / var(--root-font-size) * 1rem);
-  --radius-13: calc(13 / var(--root-font-size) * 1rem);
-  --radius-14: calc(14 / var(--root-font-size) * 1rem);
-  --radius-15: calc(15 / var(--root-font-size) * 1rem);
-  --radius-16: calc(16 / var(--root-font-size) * 1rem);
-  --radius-17: calc(17 / var(--root-font-size) * 1rem);
-  --radius-18: calc(18 / var(--root-font-size) * 1rem);
-  --radius-19: calc(19 / var(--root-font-size) * 1rem);
-  --radius-20: calc(20 / var(--root-font-size) * 1rem);
 }
