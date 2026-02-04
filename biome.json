@@ -13,17 +13,23 @@
     "rules": {
       "recommended": true,
       "correctness": {
-        "noUnusedImports": "warn",
-        "noUnusedVariables": "warn",
-        "useExhaustiveDependencies": "warn",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "error",
         "useHookAtTopLevel": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "error"
       },
       "style": {
         "noNonNullAssertion": "off",
-        "useImportType": "warn"
+        "useImportType": "error"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "error"
+      },
+      "performance": {
+        "noAccumulatingSpread": "error"
       },
       "a11y": {
         "recommended": true

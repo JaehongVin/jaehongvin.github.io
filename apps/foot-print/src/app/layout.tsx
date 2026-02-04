@@ -1,5 +1,8 @@
 import '@/styles/globals.css';
 import { cn } from '@common/ui/lib/utils';
+import { Header } from './_components/Header';
+import { LeftSidebar } from './_components/LeftSidebar';
+import { RightSidebar } from './_components/RightSidebar';
 
 export default function GlobalLayout({
   children,
@@ -8,18 +11,25 @@ export default function GlobalLayout({
 }>) {
   return (
     <html lang="ko" className="size-full">
-      <body className="flex size-full bg-gray-100 bg-[url('/assets/images/global-bg.webp')]">
-        <aside className={cn('hidden', 'dt:flex dt:flex-1')}>
-          {/** 좌측 사이드 임시 */}
-        </aside>
-        <main
-          className={cn('hide-scrollbar size-full overflow-y-auto', 'dt:w-900')}
+      <body
+        className={cn(
+          'min-h-full bg-gray-50',
+          "bg-[url('/assets/images/global-bg.webp')] bg-fixed",
+        )}
+      >
+        <Header />
+        <div
+          className={cn(
+            'mx-auto flex w-full gap-px-24 px-16 py-24',
+            'dt:max-w-px-1200',
+          )}
         >
-          {children}
-        </main>
-        <aside className={cn('hidden', 'dt:flex dt:flex-1')}>
-          {/** 우측 사이드 임시 */}
-        </aside>
+          <LeftSidebar />
+          <main className={cn('min-w-0 flex-1', 'dt:max-w-px-600')}>
+            {children}
+          </main>
+          <RightSidebar />
+        </div>
       </body>
     </html>
   );

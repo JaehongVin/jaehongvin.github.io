@@ -9,9 +9,7 @@
     "build:foot-print": "turbo run build --filter=@portfolio/foot-print",
 
     "//* 코드 품질 (Biome)": "",
-    "format": "biome format . --write",
     "format:foot-print": "biome format ./apps/foot-print --write",
-    "lint": "biome lint .",
     "lint:foot-print": "turbo run lint --filter=@portfolio/foot-print",
     "check": "biome check .",
 
