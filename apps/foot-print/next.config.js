@@ -5,6 +5,7 @@ const nextConfig = {
   //* 공통 모듈 트랜스파일
   transpilePackages: ['@common/ui'],
 
+  //* Turbopack 설정 (Next.js 16 기본 번들러)
   turbopack: {
     //* svg 파일 react 컴포넌트로 사용 가능하도록
     rules: {
@@ -13,20 +14,6 @@ const nextConfig = {
         as: '*.js',
       },
     },
-  },
-
-  webpack: (config) => {
-    //* svg 파일 react 컴포넌트로 사용 가능하도록
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: [
-        {
-          loader: '@svgr/webpack',
-        },
-      ],
-    });
-
-    return config;
   },
 };
 

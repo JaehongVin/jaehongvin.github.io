@@ -9,14 +9,15 @@
   //* 저장 시 자동 포맷팅
   "editor.formatOnSave": true,
 
-  //* 에디터에 파일 숨김
+  //* 에디터 파일 숨김 설정
   "files.exclude": {
     "**/.git": true,
     "**/.gitignore": false,
+    "**/.claude": false,
     "**/node_modules": true
   },
   "search.useIgnoreFiles": true,
-  "explorer.excludeGitIgnore": true,
+  // "explorer.excludeGitIgnore": true,
 
   //* 철자 검사 무시
   "cSpell.words": ["callees", "turbopack"],
