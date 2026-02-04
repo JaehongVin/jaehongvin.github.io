@@ -4,10 +4,15 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "//* 개발 서버": "",
     "dev": "next dev --port 3000",
-    "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0",
+
+    "//* 빌드": "",
+    "build": "next build",
+
+    "//* 코드 품질": "",
+    "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
     "compile": "pnpm run typecheck && pnpm run lint"
   },
@@ -18,14 +23,12 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@common/eslint-config": "workspace:*",
     "@common/typescript-config": "workspace:*",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "eslint": "^9.25.0",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

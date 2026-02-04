@@ -1,8 +1,8 @@
+@import "tailwindcss";
+@import "pretendard/dist/web/static/pretendard.css";
+
 /** ui 컴포넌트에 전역적으로 적용 및 터보레포환경 tailwind 적용 안되는 오류 용도 */
 @source "../../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
-
-@import 'tailwindcss';
-@import 'pretendard/dist/web/static/pretendard.css';
 
 :root {
   /** .vscode/settings.json 에서 tailwindCSS.rootFontSize 설정 값과 동일하게 해야함 */
@@ -15,7 +15,7 @@
   }
 
   body {
-    font-family: 'Pretendard', 'Apple SD Gothic Neo', Arial, sans-serif;
+    font-family: "Pretendard", "Apple SD Gothic Neo", Arial, sans-serif;
   }
 
   *,
