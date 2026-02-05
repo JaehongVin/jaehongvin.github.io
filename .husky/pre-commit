@@ -1,0 +1,19 @@
+#!/bin/sh
+
+echo ""
+echo "🔍 Biome 검사 중..."
+echo ""
+
+biome check --staged --no-errors-on-unmatched
+
+if [ $? -eq 0 ]; then
+  echo ""
+  echo "✅ 검사 통과!"
+  echo ""
+else
+  echo ""
+  echo "❌ 검사 실패 - 커밋 중단"
+  echo "   pnpm check 또는 pnpm format 실행 후 다시 시도하세요."
+  echo ""
+  exit 1
+fi
