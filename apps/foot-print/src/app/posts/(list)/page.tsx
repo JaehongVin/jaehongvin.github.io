@@ -57,28 +57,28 @@ const POSTS = [
 
 export default function HomePage() {
   return (
-    <article className="flex flex-col gap-px-16">
+    <article className="flex flex-col gap-px-12">
       {POSTS.map((post) => (
         <Card
           key={post.id}
           className="cursor-pointer transition-shadow hover:shadow-md"
         >
           <CardHeader>
-            <div className="flex items-center gap-px-8">
+            <div className="flex items-center gap-px-6">
               <Badge variant="secondary" size="sm">
                 {post.category}
               </Badge>
-              <span className="text-px-12 text-gray-400">{post.date}</span>
+              <span className="text-px-11 text-gray-400">{post.date}</span>
             </div>
-            <CardTitle className="mt-8 text-px-18 leading-px-26">
+            <CardTitle className="mt-6 text-px-15 leading-px-22">
               {post.title}
             </CardTitle>
-            <CardDescription className="mt-8 line-clamp-2">
+            <CardDescription className="mt-4 line-clamp-2 text-px-13">
               {post.description}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-px-6">
+            <div className="flex flex-wrap gap-px-4">
               {post.tags.map((tag) => (
                 <Badge key={tag} variant="outline" size="sm">
                   #{tag}

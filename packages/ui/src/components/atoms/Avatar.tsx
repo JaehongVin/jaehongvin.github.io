@@ -5,7 +5,7 @@ import { type ImgHTMLAttributes, type Ref, useState } from 'react';
 import { cn } from '../../lib/utils';
 
 const avatarVariants = cva(
-  'relative flex shrink-0 overflow-hidden rounded-full bg-gray-100',
+  'relative flex shrink-0 overflow-hidden rounded-full bg-gray-100 ring-2 ring-white/80 shadow-sm',
   {
     variants: {
       size: {
@@ -42,7 +42,7 @@ function Avatar({
   return (
     <span ref={ref} className={cn(avatarVariants({ size, className }))}>
       {showFallback ? (
-        <span className="flex-center size-full bg-gray-200 text-px-14 font-500 text-gray-600">
+        <span className="flex-center size-full rounded-full bg-gray-200 text-px-14 font-500 text-gray-600">
           {fallback || alt?.charAt(0)?.toUpperCase() || '?'}
         </span>
       ) : (

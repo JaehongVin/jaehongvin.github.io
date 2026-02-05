@@ -1,8 +1,10 @@
+import { Header } from '@/components/Header';
+import { DEFAULT_META_DATA } from '@/constants/seo';
 import '@/styles/globals.css';
 import { cn } from '@common/ui/lib/utils';
-import { Header } from './_components/Header';
-import { LeftSidebar } from './_components/LeftSidebar';
-import { RightSidebar } from './_components/RightSidebar';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = DEFAULT_META_DATA;
 
 export default function GlobalLayout({
   children,
@@ -18,18 +20,7 @@ export default function GlobalLayout({
         )}
       >
         <Header />
-        <div
-          className={cn(
-            'mx-auto flex w-full gap-px-24 px-16 py-24',
-            'dt:max-w-px-1200',
-          )}
-        >
-          <LeftSidebar />
-          <main className={cn('min-w-0 flex-1', 'dt:max-w-px-600')}>
-            {children}
-          </main>
-          <RightSidebar />
-        </div>
+        {children}
       </body>
     </html>
   );

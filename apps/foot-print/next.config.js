@@ -1,4 +1,11 @@
 const nextConfig = {
+  //* 빌드 시 정적 파일로 변환
+  output: 'export',
+
+  images: {
+    unoptimized: true,
+  },
+
   //* 리액트 엄격 모드
   reactStrictMode: true,
 
@@ -14,6 +21,16 @@ const nextConfig = {
         as: '*.js',
       },
     },
+  },
+
+  redirects: async () => {
+    return [
+      {
+        source: '/',
+        destination: '/posts',
+        permanent: true,
+      },
+    ];
   },
 };
 

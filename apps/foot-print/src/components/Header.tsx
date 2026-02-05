@@ -1,53 +1,45 @@
 import { cn } from '@common/ui/lib/utils';
+import Image from 'next/image';
 import Link from 'next/link';
-
-const NAV_LINKS = [
-  { href: '/', label: 'Blog' },
-  { href: '/about', label: 'About' },
-  { href: '/projects', label: 'Projects' },
-] as const;
 
 export function Header() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm',
+        'sticky top-0 z-40 w-full border-b border-gray-200/50 bg-white/70 backdrop-blur-px-12',
       )}
     >
       <div
         className={cn(
-          'mx-auto flex h-56 items-center justify-between px-16',
-          'dt:max-w-px-1200',
+          'mx-auto flex h-48 items-center justify-between px-24 max-w-px-1000',
         )}
       >
-        <Link href="/" className="text-px-20 font-700 text-gray-900">
+        <Link
+          href="/"
+          className="flex items-center gap-px-8 text-px-16 font-700 text-gray-900"
+          aria-label="홈으로 이동"
+        >
+          <Image
+            src="/assets/icons/logo.svg"
+            alt="발자취 로고"
+            width={16}
+            height={16}
+          />
           발자취
         </Link>
 
-        <nav className="hidden items-center gap-px-24 tb:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-px-14 font-500 text-gray-600 transition-colors hover:text-gray-900"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-px-8">
+        <div className="flex items-center gap-px-4">
           <a
-            href="https://github.com"
+            href="https://github.com/JaehongVin"
             target="_blank"
-            rel="noopener noreferrer"
-            className="flex-center size-40 rounded-px-8 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            rel="noopener noreferrer external"
+            className="flex-center size-32 rounded-px-6 text-gray-500 transition-colors hover:bg-gray-100/70 hover:text-gray-700"
           >
             <span className="sr-only">GitHub</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="currentColor"
               aria-hidden="true"
@@ -58,13 +50,13 @@ export function Header() {
 
           <button
             type="button"
-            className="flex-center size-40 rounded-px-8 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 tb:hidden"
+            className="flex-center size-32 rounded-px-6 text-gray-500 transition-colors hover:bg-gray-100/70 hover:text-gray-700 tb:hidden"
             aria-label="메뉴 열기"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

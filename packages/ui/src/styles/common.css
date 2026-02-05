@@ -74,7 +74,15 @@
   border-width: 0;
 }
 
-/** px → rem 변환 유틸리티 */
+/**
+ * * px → rem 변환 유틸리티
+ * !이 커스텀 유틸리티들은 tailwind-merge가 인식하지 못함
+ * !cn() 함수에서 클래스 충돌로 제거될 수 있으므로,
+ * !lib/utils.ts의 extendTailwindMerge 설정에 반드시 등록해야 함
+ * 예: text-px-12 + text-gray-600 사용 시
+ * - 미등록: tailwind-merge가 text-px-12를 제거함
+ * - 등록 후: 둘 다 정상 유지됨
+ */
 /* Typography */
 @utility text-px-* {
   font-size: calc(--value(integer) * var(--px-to-rem));
@@ -139,6 +147,9 @@
 @utility blur-px-* {
   filter: blur(calc(--value(integer) * var(--px-to-rem)));
 }
+@utility backdrop-blur-px-* {
+  backdrop-filter: blur(calc(--value(integer) * var(--px-to-rem)));
+}
 
 @theme {
   --breakpoint-tb: 768px;
@@ -165,25 +176,6 @@
   --color-gray-800: #27272a;
   --color-gray-900: #18181b;
   --color-gray-950: #09090b;
-
-  --color-bg-primary: var(--color-gray-50);
-  --color-bg-secondary: var(--color-gray-100);
-  --color-bg-card: #ffffff;
-  --color-bg-card-hover: var(--color-gray-50);
-
-  --color-text-primary: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-600);
-  --color-text-muted: var(--color-gray-400);
-  --color-text-inverse: #ffffff;
-
-  --color-border: var(--color-gray-200);
-  --color-border-hover: var(--color-gray-300);
-  --color-border-focus: var(--color-gray-400);
-
-  --color-primary: var(--color-gray-900);
-  --color-primary-hover: var(--color-gray-800);
-  --color-secondary: var(--color-gray-100);
-  --color-secondary-hover: var(--color-gray-200);
 
   /** 간격 스케일 (w-*, h-*, p-*, m-*, gap-* 등에 자동 적용) */
   /* w-10 = 10px에 해당하는 rem 값 */

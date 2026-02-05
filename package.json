@@ -9,7 +9,6 @@
     "//* 코드 품질 (Biome)": "",
     "format:foot-print": "biome format ./apps/foot-print --write",
     "lint:foot-print": "turbo run lint --filter=@portfolio/foot-print",
-    "check": "biome check .",
     "//* 타입 검사": "",
     "typecheck:foot-print": "turbo run typecheck --filter=@portfolio/foot-print",
     "compile:foot-print": "turbo run compile --filter=@portfolio/foot-print",
