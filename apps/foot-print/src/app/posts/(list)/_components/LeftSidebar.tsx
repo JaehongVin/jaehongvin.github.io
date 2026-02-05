@@ -1,3 +1,5 @@
+'use client';
+
 import { Avatar } from '@common/ui/atoms/Avatar';
 import { Badge } from '@common/ui/atoms/Badge';
 import { cn } from '@common/ui/lib/utils';
@@ -7,26 +9,29 @@ import {
   CardHeader,
   CardTitle,
 } from '@common/ui/molecules/Card';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-const CATEGORIES = [
-  { name: 'All', count: 24 },
-  { name: 'Frontend', count: 12 },
-  { name: 'Backend', count: 5 },
-  { name: 'DevOps', count: 4 },
-  { name: 'Life', count: 3 },
-] as const;
+interface CategoryCount {
+  name: string;
+  count: number;
+}
 
-const TAGS = [
-  'React',
-  'Next.js',
-  'TypeScript',
-  'Tailwind',
-  'Node.js',
-  'Docker',
-  'Git',
-] as const;
+interface LeftSidebarProps {
+  categories: CategoryCount[];
+  tags: string[];
+  totalCount: number;
+}
 
-export function LeftSidebar() {
+export const LeftSidebar = ({
+  categories,
+  tags,
+  totalCount,
+}: LeftSidebarProps) => {
+  const searchParams = useSearchParams();
+  const currentCategory = searchParams.get('category');
+  const currentTag = searchParams.get('tag');
+
   return (
     <aside
       className={cn(
@@ -55,17 +60,35 @@ export function LeftSidebar() {
         </CardHeader>
         <CardContent>
           <ul className="flex flex-col gap-px-4">
-            {CATEGORIES.map((category) => (
+            <li>
+              <Link
+                href="/posts"
+                className={cn(
+                  'flex w-full items-center justify-between rounded-px-4 px-6 py-4 text-px-12 text-gray-600 transition-colors hover:bg-gray-100/70 hover:text-gray-900',
+                  !currentCategory &&
+                    !currentTag &&
+                    'bg-gray-100 font-600 text-gray-900',
+                )}
+              >
+                <span>All</span>
+                <span className="text-px-11 text-gray-400">{totalCount}</span>
+              </Link>
+            </li>
+            {categories.map((category) => (
               <li key={category.name}>
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between rounded-px-4 px-6 py-4 text-px-12 text-gray-600 transition-colors hover:bg-gray-100/70 hover:text-gray-900"
+                <Link
+                  href={`/posts?category=${encodeURIComponent(category.name)}`}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-px-4 px-6 py-4 text-px-12 text-gray-600 transition-colors hover:bg-gray-100/70 hover:text-gray-900',
+                    currentCategory === category.name &&
+                      'bg-gray-100 font-600 text-gray-900',
+                  )}
                 >
                   <span>{category.name}</span>
                   <span className="text-px-11 text-gray-400">
                     {category.count}
                   </span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -78,14 +101,23 @@ export function LeftSidebar() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-px-4">
-            {TAGS.map((tag) => (
-              <Badge key={tag} variant="secondary" size="sm">
-                #{tag}
-              </Badge>
+            {tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/posts?tag=${encodeURIComponent(tag)}`}
+                className={cn(
+                  currentTag === tag &&
+                    '[&>span]:bg-gray-200 [&>span]:font-600',
+                )}
+              >
+                <Badge variant="secondary" size="sm">
+                  #{tag}
+                </Badge>
+              </Link>
             ))}
           </div>
         </CardContent>
       </Card>
     </aside>
   );
-}
+};

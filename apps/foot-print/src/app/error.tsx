@@ -7,7 +7,7 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function ErrorPage({ error, reset }: ErrorProps) {
+const ErrorPage = ({ error, reset }: ErrorProps) => {
   return (
     <main className="relative flex min-h-[calc(100vh-60px)] flex-col items-center justify-center px-16">
       <Image
@@ -15,7 +15,7 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
         alt=""
         width={240}
         height={240}
-        className="absolute translate-x-1/2 -translate-y-1/3 opacity-5"
+        className="absolute translate-x-1/5 -translate-y-1/5 opacity-5 rotate-10"
         aria-hidden="true"
       />
       <h1 className="text-px-48 font-bold text-gray-300">오류 발생</h1>
@@ -39,4 +39,6 @@ export default function ErrorPage({ error, reset }: ErrorProps) {
       </button>
     </main>
   );
-}
+};
+
+export default ErrorPage;

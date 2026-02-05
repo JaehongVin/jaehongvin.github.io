@@ -7,10 +7,8 @@
     "//* 개발 서버": "",
     "dev": "next dev --port 3000",
     "start": "next start",
-
     "//* 빌드": "",
     "build": "next build",
-
     "//* 코드 품질": "",
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
@@ -18,9 +16,13 @@
   },
   "dependencies": {
     "@common/ui": "workspace:*",
+    "gray-matter": "^4.0.3",
     "next": "^16.1.6",
+    "next-mdx-remote": "^5.0.0",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0"
   },
   "devDependencies": {
     "@common/typescript-config": "workspace:*",

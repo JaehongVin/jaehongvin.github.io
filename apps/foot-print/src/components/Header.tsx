@@ -2,7 +2,7 @@ import { cn } from '@common/ui/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export function Header() {
+export const Header = () => {
   return (
     <header
       className={cn(
@@ -74,4 +74,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+};

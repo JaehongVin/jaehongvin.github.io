@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function NotFound() {
+const NotFound = () => {
   return (
     <main className="relative flex min-h-[calc(100vh-60px)] flex-col items-center justify-center px-16">
       <Image
@@ -27,4 +27,6 @@ export default function NotFound() {
       </Link>
     </main>
   );
-}
+};
+
+export default NotFound;

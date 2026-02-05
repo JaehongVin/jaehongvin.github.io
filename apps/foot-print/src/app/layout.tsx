@@ -6,11 +6,11 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = DEFAULT_META_DATA;
 
-export default function GlobalLayout({
+const GlobalLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <html lang="ko" className="size-full">
       <body
@@ -24,4 +24,6 @@ export default function GlobalLayout({
       </body>
     </html>
   );
-}
+};
+
+export default GlobalLayout;

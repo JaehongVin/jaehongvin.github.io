@@ -1,11 +1,11 @@
 import { cn } from '@common/ui/lib/utils';
 import { RightSidebar } from './_components/RightSidebar';
 
-export default function DetailLayout({
+const DetailLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <div
       className={cn(
@@ -19,4 +19,6 @@ export default function DetailLayout({
       <RightSidebar />
     </div>
   );
-}
+};
+
+export default DetailLayout;

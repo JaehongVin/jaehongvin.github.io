@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from '@common/ui/lib/utils';
 import {
   Card,
@@ -5,22 +7,59 @@ import {
   CardHeader,
   CardTitle,
 } from '@common/ui/molecules/Card';
+import { useEffect, useState } from 'react';
 
-const TOC_LEVEL = {
-  PARENT: 1,
-  CHILD: 2,
-} as const;
+interface TocItem {
+  id: string;
+  title: string;
+  level: 2 | 3;
+}
 
-const TOC_ITEMS = [
-  { id: 'introduction', title: '소개', level: TOC_LEVEL.PARENT },
-  { id: 'getting-started', title: '시작하기', level: TOC_LEVEL.PARENT },
-  { id: 'installation', title: '설치', level: TOC_LEVEL.CHILD },
-  { id: 'configuration', title: '설정', level: TOC_LEVEL.CHILD },
-  { id: 'usage', title: '사용법', level: TOC_LEVEL.PARENT },
-  { id: 'conclusion', title: '마무리', level: TOC_LEVEL.PARENT },
-] as const;
+export const RightSidebar = () => {
+  const [toc, setToc] = useState<TocItem[]>([]);
+  const [activeId, setActiveId] = useState('');
 
-export function RightSidebar() {
+  useEffect(() => {
+    const headings = document.querySelectorAll('article h2, article h3');
+    const items: TocItem[] = [];
+
+    headings.forEach((heading) => {
+      const id = heading.id;
+      const title = heading.textContent || '';
+      const level = heading.tagName === 'H2' ? 2 : 3;
+
+      if (id && title) {
+        items.push({ id, title, level });
+      }
+    });
+
+    setToc(items);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: '-80px 0px -80% 0px' },
+    );
+
+    const headings = document.querySelectorAll('article h2, article h3');
+    for (const heading of headings) {
+      observer.observe(heading);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (toc.length === 0) {
+    return null;
+  }
+
   return (
     <aside
       className={cn(
@@ -34,14 +73,14 @@ export function RightSidebar() {
         </CardHeader>
         <CardContent>
           <ul className="flex flex-col gap-10">
-            {TOC_ITEMS.map((item) => (
+            {toc.map((item) => (
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
                   className={cn(
                     'block text-px-12 font-500 text-gray-600 transition-colors hover:text-gray-900',
-                    item.level === TOC_LEVEL.CHILD &&
-                      'pl-10 text-px-11 font-400',
+                    item.level === 3 && 'pl-10 text-px-11 font-400',
+                    activeId === item.id && 'text-gray-900 font-600',
                   )}
                 >
                   {item.title}
@@ -53,4 +92,4 @@ export function RightSidebar() {
       </Card>
     </aside>
   );
-}
+};
