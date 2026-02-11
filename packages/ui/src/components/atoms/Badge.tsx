@@ -25,17 +25,16 @@ const badgeVariants = cva(
   },
 );
 
-type BadgeProps = HTMLAttributes<HTMLSpanElement> &
-  VariantProps<typeof badgeVariants>;
+interface BadgeProps
+  extends HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, size, ...props }: BadgeProps) {
-  return (
-    <span
-      className={cn(badgeVariants({ variant, size, className }))}
-      {...props}
-    />
-  );
-}
+const Badge = ({ className, variant, size, ...props }: BadgeProps) => (
+  <span
+    className={cn(badgeVariants({ variant, size, className }))}
+    {...props}
+  />
+);
 
 export { Badge, badgeVariants };
 export type { BadgeProps };

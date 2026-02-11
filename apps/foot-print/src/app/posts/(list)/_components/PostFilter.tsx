@@ -20,11 +20,14 @@ export const PostFilter = ({ posts }: PostFilterProps) => {
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get('category');
   const currentTag = searchParams.get('tag');
+  const hasActiveFilter = Boolean(currentCategory || currentTag);
 
   const filteredPosts = posts.filter((post) => {
-    if (currentCategory && post.category !== currentCategory) return false;
-    if (currentTag && !post.tags.includes(currentTag)) return false;
-    return true;
+    const matchesCategory =
+      !currentCategory || post.category === currentCategory;
+    const matchesTag = !currentTag || post.tags.includes(currentTag);
+
+    return matchesCategory && matchesTag;
   });
 
   if (filteredPosts.length === 0) {
@@ -32,11 +35,11 @@ export const PostFilter = ({ posts }: PostFilterProps) => {
       <Card>
         <CardContent className="py-32 text-center">
           <p className="text-px-14 text-gray-500">
-            {currentCategory || currentTag
+            {hasActiveFilter
               ? '해당하는 게시글이 없습니다.'
               : '아직 게시글이 없습니다.'}
           </p>
-          {(currentCategory || currentTag) && (
+          {hasActiveFilter && (
             <Link
               href="/posts"
               className="mt-12 inline-block text-px-13 text-gray-600 underline"

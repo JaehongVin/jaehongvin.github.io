@@ -7,9 +7,9 @@ import rehypeSlug from 'rehype-slug';
 import { mdxComponents } from '@/components/mdx';
 import { getAllSlugs, getPostBySlug } from '@/utils/mdx';
 
-type DetailPageProps = {
+interface DetailPageProps {
   params: Promise<{ slug: string }>;
-};
+}
 
 export async function generateStaticParams() {
   const slugs = await getAllSlugs();

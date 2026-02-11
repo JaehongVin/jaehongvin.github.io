@@ -21,13 +21,14 @@ const avatarVariants = cva(
   },
 );
 
-type AvatarProps = ImgHTMLAttributes<HTMLImageElement> &
-  VariantProps<typeof avatarVariants> & {
-    fallback?: string;
-    ref?: Ref<HTMLSpanElement>;
-  };
+interface AvatarProps
+  extends ImgHTMLAttributes<HTMLImageElement>,
+    VariantProps<typeof avatarVariants> {
+  fallback?: string;
+  ref?: Ref<HTMLSpanElement>;
+}
 
-function Avatar({
+const Avatar = ({
   className,
   size,
   src,
@@ -35,7 +36,7 @@ function Avatar({
   fallback,
   ref,
   ...props
-}: AvatarProps) {
+}: AvatarProps) => {
   const [hasError, setHasError] = useState(false);
   const showFallback = !src || hasError;
 
@@ -56,7 +57,7 @@ function Avatar({
       )}
     </span>
   );
-}
+};
 
 export { Avatar, avatarVariants };
 export type { AvatarProps };

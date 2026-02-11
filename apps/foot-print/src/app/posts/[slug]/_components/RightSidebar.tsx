@@ -21,17 +21,14 @@ export const RightSidebar = () => {
 
   useEffect(() => {
     const headings = document.querySelectorAll('article h2, article h3');
-    const items: TocItem[] = [];
 
-    headings.forEach((heading) => {
-      const id = heading.id;
-      const title = heading.textContent || '';
-      const level = heading.tagName === 'H2' ? 2 : 3;
-
-      if (id && title) {
-        items.push({ id, title, level });
-      }
-    });
+    const items = Array.from(headings)
+      .map((heading) => ({
+        id: heading.id,
+        title: heading.textContent || '',
+        level: (heading.tagName === 'H2' ? 2 : 3) as 2 | 3,
+      }))
+      .filter((item) => item.id && item.title);
 
     setToc(items);
   }, []);
@@ -73,20 +70,25 @@ export const RightSidebar = () => {
         </CardHeader>
         <CardContent>
           <ul className="flex flex-col gap-10">
-            {toc.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={`#${item.id}`}
-                  className={cn(
-                    'block text-px-12 font-500 text-gray-600 transition-colors hover:text-gray-900',
-                    item.level === 3 && 'pl-10 text-px-11 font-400',
-                    activeId === item.id && 'text-gray-900 font-600',
-                  )}
-                >
-                  {item.title}
-                </a>
-              </li>
-            ))}
+            {toc.map((item) => {
+              const isSubHeading = item.level === 3;
+              const isActive = activeId === item.id;
+
+              return (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    className={cn(
+                      'block text-px-12 font-500 text-gray-600 transition-colors hover:text-gray-900',
+                      isSubHeading && 'pl-10 text-px-11 font-400',
+                      isActive && 'text-gray-900 font-600',
+                    )}
+                  >
+                    {item.title}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </CardContent>
       </Card>

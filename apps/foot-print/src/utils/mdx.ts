@@ -75,28 +75,19 @@ export const getAllTags = async (): Promise<string[]> => {
 
 export const extractToc = (content: string): TocItem[] => {
   const headingRegex = /^(#{2,3})\s+(.+)$/gm;
-  const toc: TocItem[] = [];
 
-  let match: RegExpExecArray | null = headingRegex.exec(content);
-  while (match !== null) {
-    const hashes = match[1];
-    const text = match[2];
+  return Array.from(content.matchAll(headingRegex))
+    .filter(([, hashes, text]) => hashes && text)
+    .map(([, hashes, text]) => {
+      const title = text!.trim();
 
-    if (!hashes || !text) {
-      match = headingRegex.exec(content);
-      continue;
-    }
-
-    const level = hashes.length as 2 | 3;
-    const title = text.trim();
-    const id = title
-      .toLowerCase()
-      .replace(/[^a-z0-9가-힣\s-]/g, '')
-      .replace(/\s+/g, '-');
-
-    toc.push({ id, title, level });
-    match = headingRegex.exec(content);
-  }
-
-  return toc;
+      return {
+        id: title
+          .toLowerCase()
+          .replace(/[^a-z0-9가-힣\s-]/g, '')
+          .replace(/\s+/g, '-'),
+        title,
+        level: hashes!.length as 2 | 3,
+      };
+    });
 };
