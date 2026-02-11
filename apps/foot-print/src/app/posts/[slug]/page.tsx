@@ -1,10 +1,5 @@
 import { Badge } from '@common/ui/atoms/Badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@common/ui/molecules/Card';
+import { Card, CardContent } from '@common/ui/molecules/Card';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
@@ -48,27 +43,29 @@ const PostDetailPage = async ({ params }: DetailPageProps) => {
   return (
     <article>
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-px-6">
-            <Badge variant="secondary" size="sm">
-              {post.category}
-            </Badge>
-            <span className="text-px-12 text-gray-400">{post.date}</span>
-          </div>
-          <CardTitle className="mt-8 text-px-24 leading-px-32">
-            {post.title}
-          </CardTitle>
-          <p className="mt-8 text-px-14 text-gray-500">{post.description}</p>
-          <div className="mt-12 flex flex-wrap gap-px-4">
-            {post.tags.map((tag) => (
-              <Badge key={tag} variant="outline" size="sm">
-                #{tag}
+        <CardContent className="p-24 tb:p-32">
+          <header className="pb-32">
+            <h1 className="text-px-32 font-700 leading-px-42 text-gray-900">
+              {post.title}
+            </h1>
+            <p className="mt-12 text-px-15 text-gray-500">{post.description}</p>
+            <div className="mt-16 flex flex-wrap items-center gap-px-8 text-px-13 text-gray-400">
+              <time>{post.date}</time>
+              <span aria-hidden="true">·</span>
+              <Badge variant="secondary" size="sm">
+                {post.category}
               </Badge>
-            ))}
-          </div>
-        </CardHeader>
-        <CardContent className="border-t border-gray-100 pt-24">
-          <div className="prose">
+              {post.tags.map((tag) => (
+                <Badge key={tag} variant="outline" size="sm">
+                  #{tag}
+                </Badge>
+              ))}
+            </div>
+          </header>
+
+          <hr className="border-gray-200" />
+
+          <div className="prose pt-32">
             <MDXRemote
               source={post.content}
               components={mdxComponents}

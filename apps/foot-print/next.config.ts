@@ -1,6 +1,10 @@
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   //* 빌드 시 정적 파일로 변환
   output: 'export',
+
+  typedRoutes: true,
 
   images: {
     unoptimized: true,

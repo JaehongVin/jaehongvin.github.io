@@ -13,7 +13,7 @@ const H2 = ({ children, ...props }: ComponentProps<'h2'>) => {
   return (
     <h2
       id={id}
-      className="mt-40 mb-16 scroll-mt-80 text-px-22 font-700 text-gray-900 border-b border-gray-200 pb-8"
+      className="mt-48 mb-20 scroll-mt-80 text-px-22 font-700 text-gray-900 border-b border-gray-200 pb-8"
       {...props}
     >
       {children}
@@ -36,7 +36,7 @@ const H3 = ({ children, ...props }: ComponentProps<'h3'>) => {
 };
 
 const P = ({ children, ...props }: ComponentProps<'p'>) => (
-  <p className="my-16 text-px-15 leading-px-26 text-gray-700" {...props}>
+  <p className="my-20 text-px-15 leading-px-26 text-gray-700" {...props}>
     {children}
   </p>
 );

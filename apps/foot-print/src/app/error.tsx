@@ -15,7 +15,7 @@ const ErrorPage = ({ error, reset }: ErrorProps) => {
         alt=""
         width={240}
         height={240}
-        className="absolute translate-x-1/5 -translate-y-1/5 opacity-5 rotate-10"
+        className="absolute translate-x-1/5 -translate-y-1/3 opacity-5 rotate-10"
         aria-hidden="true"
       />
       <h1 className="text-px-48 font-bold text-gray-300">오류 발생</h1>
