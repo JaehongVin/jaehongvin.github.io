@@ -1,0 +1,86 @@
+name: Deploy to GitHub Pages
+
+# ──────────────────────────────────────────────
+# 워크플로우 트리거 설정
+# ──────────────────────────────────────────────
+on:
+  # main 브랜치에 push 될 때 자동 실행 (PR 머지 시 트리거됨)
+  push:
+    branches: [main]
+  # GitHub Actions 탭에서 수동으로도 실행 가능
+  workflow_dispatch:
+
+# ──────────────────────────────────────────────
+# 권한 설정
+# GitHub Pages 배포에 필요한 최소 권한만 부여
+# ──────────────────────────────────────────────
+permissions:
+  contents: read # 레포지토리 코드 읽기
+  pages: write # GitHub Pages에 배포하기 위한 쓰기 권한
+  id-token: write # Pages 배포 인증에 필요한 토큰 발급
+
+# ──────────────────────────────────────────────
+# 동시 실행 제어
+# 여러 배포가 동시에 실행되는 것을 방지
+# ──────────────────────────────────────────────
+concurrency:
+  group: pages
+  cancel-in-progress: false # 진행 중인 배포는 취소하지 않음
+
+jobs:
+  # ════════════════════════════════════════════
+  # CI (Continuous Integration) - 빌드 단계
+  # 코드를 체크아웃하고, 의존성을 설치하고, 빌드하여
+  # 배포 가능한 정적 파일(아티팩트)을 생성하는 단계
+  # ════════════════════════════════════════════
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 레포지토리 코드를 CI 러너에 체크아웃
+      - uses: actions/checkout@v4
+
+      # pnpm 패키지 매니저 설치
+      # package.json의 "packageManager" 필드에서 버전(10.28.2)을 자동 감지
+      - uses: pnpm/action-setup@v4
+
+      # Node.js 설치 및 pnpm 캐시 설정
+      # .nvmrc 파일에서 Node.js 버전(24.13.0)을 읽어 설치
+      # pnpm 의존성 캐시로 이후 빌드 속도 향상
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      # 의존성 설치
+      # --frozen-lockfile: lock 파일과 정확히 일치하는 버전만 설치 (CI 환경 안정성 보장)
+      - run: pnpm install --frozen-lockfile
+
+      # Next.js 앱 빌드
+      # Turbo를 통해 foot-print 앱과 그 의존성(@common/ui 등)을 빌드
+      # output: 'export' 설정에 의해 apps/foot-print/out/ 폴더에 정적 파일 생성
+      - run: pnpm build:foot-print
+
+      # GitHub Pages 배포를 위한 설정 초기화
+      - uses: actions/configure-pages@v5
+
+      # 빌드 결과물(정적 파일)을 아티팩트로 업로드
+      # 이 아티팩트가 다음 deploy 단계에서 사용됨
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./apps/foot-print/out
+
+  # ════════════════════════════════════════════
+  # CD (Continuous Deployment) - 배포 단계
+  # CI에서 생성한 아티팩트를 GitHub Pages에 실제 배포하는 단계
+  # build 작업이 성공해야만 실행됨 (needs: build)
+  # ════════════════════════════════════════════
+  deploy:
+    needs: build # CI(build) 완료 후 실행
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # 배포된 URL 출력
+    steps:
+      # 업로드된 아티팩트를 GitHub Pages에 배포
+      - id: deployment
+        uses: actions/deploy-pages@v4
