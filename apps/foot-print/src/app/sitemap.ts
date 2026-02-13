@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/constants/seo';
 import { getAllPosts } from '@/utils/mdx';
 
+export const dynamic = 'force-static';
+
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const posts = await getAllPosts();
 

@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/constants/seo';
 
+export const dynamic = 'force-static';
+
 const robots = (): MetadataRoute.Robots => ({
   rules: {
     userAgent: '*',
