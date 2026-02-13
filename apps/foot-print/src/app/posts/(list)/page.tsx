@@ -7,7 +7,6 @@ import { LeftSidebar } from './_components/LeftSidebar';
 import { PostFilter } from './_components/PostFilter';
 
 export const metadata: Metadata = {
-  title: '글 목록',
   description: SITE_DESCRIPTION,
   alternates: {
     canonical: `${SITE_URL}/posts`,
