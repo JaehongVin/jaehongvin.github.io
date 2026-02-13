@@ -1,11 +1,17 @@
 import type { Metadata } from 'next';
 
+export const SITE_URL = 'https://jaehongvin.github.io';
+export const SITE_NAME = '흔한 개발자의 발자취';
+export const SITE_DESCRIPTION =
+  '프론트엔드 개발자 빈재홍의 기술 블로그입니다. 웹 개발, React, Next.js, TypeScript 등 프론트엔드 기술을 기록합니다.';
+
 export const DEFAULT_META_DATA = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: '흔한 개발자의 발자취',
+    default: SITE_NAME,
     template: '%s | 발자취',
   },
-  description: '개발자 빈재홍의 기술 블로그입니다.',
+  description: SITE_DESCRIPTION,
   keywords: [
     '프론트엔드',
     '개발자',
@@ -16,25 +22,35 @@ export const DEFAULT_META_DATA = {
     '웹 개발',
     '빈재홍',
   ],
-  authors: [{ name: '빈재홍' }],
+  authors: [{ name: '빈재홍', url: SITE_URL }],
   creator: '빈재홍',
+  publisher: '빈재홍',
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
-    siteName: '흔한 개발자의 발자취',
-    title: '흔한 개발자의 발자취',
-    description:
-      '프론트엔드 개발자 빈재홍의 기술 블로그입니다. 웹 개발, React, Next.js, TypeScript 등 프론트엔드 기술을 기록합니다.',
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: '흔한 개발자의 발자취',
-    description:
-      '프론트엔드 개발자 빈재홍의 기술 블로그입니다. 웹 개발, React, Next.js, TypeScript 등 프론트엔드 기술을 기록합니다.',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   icons: {
     icon: '/assets/icons/logo.svg',

@@ -1,8 +1,18 @@
 import { cn } from '@common/ui/lib/utils';
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { SITE_DESCRIPTION, SITE_URL } from '@/constants/seo';
 import { getAllCategories, getAllPosts, getAllTags } from '@/utils/mdx';
 import { LeftSidebar } from './_components/LeftSidebar';
 import { PostFilter } from './_components/PostFilter';
+
+export const metadata: Metadata = {
+  title: '글 목록',
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: `${SITE_URL}/posts`,
+  },
+};
 
 const PostListPage = async () => {
   const [posts, categories, tags] = await Promise.all([

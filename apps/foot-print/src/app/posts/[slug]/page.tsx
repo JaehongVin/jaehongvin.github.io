@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import rehypeSlug from 'rehype-slug';
 import { mdxComponents } from '@/components/mdx';
+import { SITE_NAME, SITE_URL } from '@/constants/seo';
 import { getAllSlugs, getPostBySlug } from '@/utils/mdx';
 
 interface DetailPageProps {
@@ -26,9 +27,31 @@ export async function generateMetadata({
     return { title: '게시글을 찾을 수 없습니다' };
   }
 
+  const postUrl = `${SITE_URL}/posts/${slug}`;
+
   return {
     title: post.title,
     description: post.description,
+    keywords: [post.category, ...post.tags],
+    alternates: {
+      canonical: postUrl,
+    },
+    openGraph: {
+      type: 'article',
+      url: postUrl,
+      title: post.title,
+      description: post.description,
+      siteName: SITE_NAME,
+      locale: 'ko_KR',
+      publishedTime: new Date(post.date).toISOString(),
+      authors: ['빈재홍'],
+      tags: post.tags,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+    },
   };
 }
 
@@ -40,8 +63,31 @@ const PostDetailPage = async ({ params }: DetailPageProps) => {
     notFound();
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: new Date(post.date).toISOString(),
+    author: {
+      '@type': 'Person',
+      name: '빈재홍',
+      url: SITE_URL,
+    },
+    publisher: {
+      '@type': 'Person',
+      name: '빈재홍',
+    },
+    url: `${SITE_URL}/posts/${slug}`,
+    keywords: [post.category, ...post.tags],
+  };
+
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Card>
         <CardContent className="p-24 tb:p-32">
           <header className="pb-32">
