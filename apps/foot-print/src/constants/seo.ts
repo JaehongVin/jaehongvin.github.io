@@ -52,6 +52,9 @@ export const DEFAULT_META_DATA = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    google: 'Kbv2bBA2vhn3zFObG94eQVpttG3cxgwD-s46ofI4g8E',
+  },
   icons: {
     icon: '/assets/icons/logo.svg',
   },
