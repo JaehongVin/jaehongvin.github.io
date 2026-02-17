@@ -1,0 +1,316 @@
+---
+title: "AI 코드 리뷰 파이프라인 구축기"
+description: "Gemini 무료 API와 GitLab CI로 AI 코드 리뷰 시스템을 직접 구축한 과정"
+date: "2026-01-09"
+category: "DX"
+tags: ["AI", "CI/CD", "코드리뷰", "DX"]
+---
+
+## 들어가며
+
+코드 리뷰는 중요하다. 다들 안다. 그런데 솔직히 말하면, 바쁠 때 리뷰의 질이 떨어지는 건 어쩔 수 없는 현실이다.
+
+일정에 쫓기면 "LGTM" 한 줄이면 끝나는 리뷰가 되기도 하고, 반대로 꼼꼼히 보려다 보면 리뷰가 병목이 되어 MR이 쌓이기도 한다. 리뷰어마다 보는 기준도 다르고, 같은 사람이라도 컨디션에 따라 놓치는 부분이 생긴다.
+
+AI가 이걸 보완해줄 수 있지 않을까? 사람이 놓치기 쉬운 패턴들 — `any` 타입 남용, `console.log` 잔재, 빈 catch 블록 같은 것들을 일관되게 잡아주고, 사람은 비즈니스 로직과 설계에 집중할 수 있으면 좋겠다고 생각했다.
+
+그래서 직접 만들어보기로 했다. 회사에 제안하기 전에, 일단 개인 API 키로 POC부터 돌려보자는 생각이었다.
+
+---
+
+## 왜 직접 만들었나
+
+AI 코드 리뷰 도구는 이미 있다. [CodeRabbit](https://coderabbit.ai/) 같은 SaaS도 있고, Gemini CLI 같은 도구를 활용하는 방법도 있다.
+
+하지만 몇 가지 이유로 직접 만드는 쪽을 택했다.
+
+- **팀 컨벤션 반영이 어렵다.** SaaS 도구들은 범용적이다. 우리 팀만의 규칙 — 예를 들어 `next/link` 대신 커스텀 링크 컴포넌트를 써야 한다거나, Tailwind 디자인 토큰이 있는데 임의 색상값을 쓰면 안 된다거나 — 이런 건 직접 프롬프트에 넣어야 한다.
+- **비용.** SaaS 도구는 시트당 과금이다. POC 단계에서 팀 전체 라이선스를 결제하기엔 부담스럽다.
+- **직접 해보고 싶었다.** 솔직히 이게 가장 컸다. AI를 활용한 개발 자동화를 직접 구축해보고, 그 과정에서 배우고 싶었다. 되면 팀에 어필할 수 있고, 안 되면 나만 시간 좀 쓰는 거니까.
+
+---
+
+## 기술 스택 선택
+
+### Gemini 2.5 Flash — 무료 티어
+
+Google AI Studio에서 개인 계정으로 API 키를 발급받았다. 기본 프로젝트가 아닌 새 프로젝트를 생성하고, 결제 연동은 하지 않았다. 무료 티어로도 충분했다.
+
+`gemini-2.5-flash`를 선택한 이유는 단순하다. 무료 티어에서 쓸 수 있으면서 코드 분석 능력이 꽤 괜찮았다.
+
+### GitLab CI
+
+회사에서 GitLab을 쓰고 있었고, 마침 메인테이너 권한이 있었다. CI/CD 파이프라인에 job 하나 추가하는 건 어렵지 않았다.
+
+### TypeScript
+
+리뷰 도구 자체도 TypeScript로 작성했다. `tsx`로 직접 실행하니 별도 빌드 과정 없이 바로 돌릴 수 있었다.
+
+---
+
+## 구조
+
+```
+tools/ai-review/
+├── package.json
+├── tsconfig.json
+├── src/
+│   ├── index.ts          # 메인 오케스트레이션
+│   ├── gemini.ts         # Gemini API 호출
+│   ├── gitlab.ts         # GitLab API 통합
+│   ├── constants.ts      # 모델명 등 상수
+│   └── conventions.ts    # 컨벤션 로드 및 파싱
+└── conventions/
+    └── review-rules.md   # AI 리뷰 규칙 정의
+```
+
+진입점은 `scripts/ai_review.sh`이고, 이 스크립트가 `tools/ai-review` 디렉토리에서 의존성 설치 후 `npm run review`를 실행한다.
+
+---
+
+## 핵심 구현
+
+### GitLab CI 설정
+
+`.gitlab-ci.yml`에 `ai-code-review` job을 추가했다.
+
+```yaml
+ai-code-review:
+  stage: review
+  image: node:$NODE_VERSION-alpine
+  rules:
+    # stage → prod 병합은 리뷰 제외
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" &&
+          $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "stage" &&
+          $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "prod"
+      when: never
+    # Draft MR은 제외
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" &&
+          $CI_MERGE_REQUEST_TITLE !~ /^Draft:/
+  script:
+    - ./scripts/ai_review.sh
+  variables:
+    GEMINI_API_KEY: $GEMINI_API_KEY
+    GITLAB_TOKEN: $GITLAB_TOKEN
+  allow_failure: true
+  cache:
+    key: ai-review-$CI_COMMIT_REF_SLUG
+    paths:
+      - tools/ai-review/node_modules/
+```
+
+몇 가지 포인트가 있다.
+
+- **Draft MR은 제외한다.** 아직 작업 중인 MR에 리뷰를 달면 노이즈가 된다.
+- **stage → prod 병합은 제외한다.** 릴리즈 MR까지 AI가 리뷰할 필요는 없다.
+- **`allow_failure: true`를 설정했다.** AI 리뷰가 실패해도 전체 CI가 막히면 안 된다. 리뷰는 보조 수단이니까.
+
+### Gemini API 호출
+
+```typescript
+const model = genAI.getGenerativeModel({
+  model: 'gemini-2.5-flash',
+  generationConfig: {
+    temperature: 0.3,
+    responseMimeType: 'application/json',
+  },
+});
+```
+
+`temperature`를 0.3으로 낮게 잡았다. 코드 리뷰에서 창의적인 답변은 필요 없다. 같은 패턴에 대해 일관된 피드백을 주는 게 중요하다.
+
+응답 형식을 JSON으로 강제해서, 파싱 실패 없이 안정적으로 결과를 처리할 수 있게 했다.
+
+### 중복 리뷰 방지
+
+무료 티어라 토큰과 요청 횟수에 제한이 있다. 그래서 PR당 리뷰를 1회로 제한했다.
+
+```typescript
+const hasExistingReview = await hasExistingAIReview(mrIid);
+
+if (hasExistingReview) {
+  console.log('이미 AI 리뷰가 존재합니다. 스킵합니다.');
+  process.exit(0);
+}
+```
+
+MR 코멘트에 `## 🤖 AI 코드 리뷰`라는 마커가 있는지 확인하고, 있으면 실행을 건너뛴다. 멱등성을 보장하면서 API 호출을 아끼는 방법이다.
+
+### 컨벤션 기반 리뷰
+
+프롬프트에 팀 컨벤션을 그대로 주입한다. 이게 직접 만든 가장 큰 이유이기도 하다.
+
+```typescript
+const conventions = loadConventions();
+
+const prompt = `
+당신은 시니어 코드 리뷰어입니다.
+Kent Beck의 Simple Design 원칙을 따릅니다.
+
+[팀 컨벤션]
+${'${conventions.claudeMd}'}
+
+[리뷰 규칙]
+${'${conventions.reviewRules}'}
+
+[디자인 토큰]
+${'${conventions.tailwindTokens}'}
+
+다음 코드 변경사항을 리뷰해주세요:
+${'${diff}'}
+`;
+```
+
+`CLAUDE.md`에 있는 프로젝트 아키텍처, `review-rules.md`에 정의한 심각도별 체크리스트, 심지어 `tailwind.config.js`에서 디자인 토큰까지 자동으로 추출해서 프롬프트에 포함시킨다. 컨벤션이 바뀌면 AI 리뷰도 자동으로 반영된다.
+
+---
+
+## 리뷰 규칙
+
+Kent Beck의 Simple Design 원칙을 기반으로, 심각도를 세 단계로 나눴다.
+
+### 🚨 Error — 반드시 수정
+
+- `any` 타입 사용 및 타입 단언
+- `console.log` 잔재 (`warn`, `error`, `info`는 허용)
+- `@ts-ignore` / `@ts-expect-error`
+- 보안 취약점 (XSS, `innerHTML`)
+- `next/link`, `next/image` 직접 사용 (커스텀 컴포넌트 필수)
+
+### ⚠️ Warning — 수정 권장
+
+- 빈 catch 블록
+- 하드코딩된 색상값 (디자인 토큰이 있는데 `text-[#3B82F6]` 사용)
+- 50줄 이상 함수
+- 7개 이상 props
+- mutation 후 `queryClient.invalidateQueries()` 누락
+
+### 💡 Suggestion — 선택적 개선
+
+- 더 명확한 네이밍
+- 코드 간소화
+- 성능 최적화 포인트
+
+포맷팅 이슈 — import 순서나 공백 같은 것들은 리뷰하지 않도록 했다. 그건 린터가 할 일이니까.
+
+---
+
+## 실행 로그
+
+MR이 생성되면 CI에서 이런 로그가 찍힌다.
+
+```
+🔍 AI Code Review 시작
+📋 MR #487: feat(WEL-2987): 정책 상세 페이지 리팩토링
+✅ 기존 AI 리뷰 없음 - 리뷰를 진행합니다.
+
+📂 변경된 파일 5개 감지 (ts/tsx만 필터링)
+  - src/app/(biz)/policy/[id]/_components/PolicyDetail.tsx
+  - src/app/(biz)/policy/[id]/_components/ApplyButton.tsx
+  - src/app/(biz)/policy/[id]/_hooks/usePolicyDetail.ts
+  - src/app/(biz)/policy/_components/PolicyCard.tsx
+  - src/types/policy.ts
+
+📖 컨벤션 로드 완료
+  - CLAUDE.md (2.1KB)
+  - review-rules.md (1.8KB)
+  - Tailwind tokens: 24 colors, 15 spacing
+
+🤖 Gemini API 호출 중...
+✅ 응답 수신 (1.2초)
+
+📝 리뷰 결과
+  - 🚨 Error: 1건
+  - ⚠️ Warning: 2건
+  - 💡 Suggestion: 1건
+  - 👍 Positives: 2건
+
+💬 MR에 요약 코멘트 게시 완료
+💬 인라인 코멘트 4건 게시 완료
+✨ AI Code Review 완료
+```
+
+### MR에 달리는 리뷰 예시
+
+실제로 MR에 달리는 요약 코멘트는 이렇게 생겼다.
+
+```
+## 🤖 AI 코드 리뷰
+
+### 요약
+정책 상세 페이지 리팩토링이 잘 진행되었습니다.
+컴포넌트 분리와 커스텀 훅 추출이 적절합니다.
+다만 타입 안전성과 디자인 토큰 관련 몇 가지 개선 포인트가 있습니다.
+
+### 🚨 Error (1건)
+- `PolicyDetail.tsx:42` — `as any` 타입 단언이 감지되었습니다.
+
+### ⚠️ Warning (2건)
+- `ApplyButton.tsx:15` — 하드코딩된 색상값 `text-[#3B82F6]` 사용.
+  디자인 토큰 `text-B-500`으로 대체해주세요.
+- `usePolicyDetail.ts:28` — mutation 후
+  `queryClient.invalidateQueries()` 호출이 누락되었습니다.
+
+### 💡 Suggestion (1건)
+- `PolicyCard.tsx:8` — `formatDate` 유틸 함수로 추출하면
+  재사용성이 높아질 것 같습니다.
+
+### 👍 잘한 점
+- 정책 상세 로직을 `usePolicyDetail` 훅으로 깔끔하게 분리했습니다.
+- 컴포넌트 단위가 적절하고 단일 책임 원칙을 잘 따르고 있습니다.
+```
+
+그리고 각 이슈에 대해 해당 라인에 인라인 코멘트도 달린다. 코드의 어느 부분이 문제인지 바로 확인할 수 있어서, 리뷰를 반영하기가 훨씬 수월하다.
+
+---
+
+## 흐름 정리
+
+전체 흐름을 정리하면 이렇다.
+
+```
+1. MR 생성
+   ↓
+2. GitLab CI 트리거
+   ↓
+3. Draft 여부 확인 → Draft면 스킵
+   ↓
+4. 기존 AI 리뷰 확인 → 있으면 스킵 (PR당 1회)
+   ↓
+5. 변경된 TS/TSX 파일 수집 (테스트, 자동생성 파일 제외)
+   ↓
+6. 팀 컨벤션 + 디자인 토큰 로드
+   ↓
+7. Gemini API 호출 (temperature 0.3)
+   ↓
+8. MR에 요약 코멘트 + 인라인 코멘트 게시
+```
+
+---
+
+## 결과
+
+일단 혼자 2주 정도 돌려보면서 검증했다. 내 MR에만 적용해서 리뷰 품질을 확인했다.
+
+솔직히 처음에는 "이게 쓸만할까?" 싶었는데, 생각보다 괜찮았다.
+
+- **디자인 토큰 위반을 정확히 짚었다.** `text-[#fff]` 쓰면 바로 `text-Gray-white` 쓰라고 알려준다. Tailwind 설정에서 토큰을 자동으로 읽어오니까 가능한 일이다.
+- **타입 안전성 이슈도 잘 잡았다.** `as any`, `@ts-ignore` 같은 건 거의 100% 감지했다.
+- **좋은 점도 짚어준다.** 이게 은근히 좋았다. "컴포넌트 분리가 적절합니다" 같은 피드백이 달리면 방향이 맞다는 확신이 생긴다.
+
+물론 한계도 있었다.
+
+- 비즈니스 로직의 맥락은 이해하지 못한다. "이 API를 여기서 호출하는 게 맞나?"는 사람이 판단해야 한다.
+- 무료 티어라 PR당 1회 제한은 아쉽다. 코드를 수정하고 다시 리뷰를 받고 싶을 때가 있다.
+
+하지만 목표는 사람을 대체하는 게 아니라, 사람이 더 중요한 것에 집중할 수 있게 보조하는 거였다. 그 관점에서 충분히 쓸만했다.
+
+---
+
+## 마무리
+
+사실 이걸 만들면서 가장 좋았던 건, 아무도 시키지 않았는데 직접 해봤다는 것 자체였다.
+
+개인 API 키 하나로 시작한 POC가 팀에 공유되고, 실제 워크플로우에 녹아들어가는 과정이 꽤 재미있었다. 안 됐으면 나만 시간 좀 쓰는 거고, 되면 팀 전체의 DX가 좋아지는 거니까 손해 볼 게 없었다.
+
+AI가 코드 리뷰를 완전히 대체할 수는 없다. 하지만 사람이 놓치기 쉬운 것들을 일관되게 잡아주는 건 확실하다. 사람은 설계와 비즈니스 로직에 집중하고, 반복적인 패턴 체크는 AI에게 맡기는 것. 이게 내가 생각하는 AI 코드 리뷰의 역할이다.
