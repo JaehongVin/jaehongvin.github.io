@@ -1,0 +1,231 @@
+---
+title: "죽은 코드 631개, knip으로 청소한 이야기"
+description: "사용하지 않는 파일, 의존성, export를 knip으로 찾아내고 94.3% 정리한 과정"
+date: "2025-10-17"
+category: "DX"
+tags: ["knip", "리팩토링", "DX"]
+---
+
+## 들어가며
+
+곧 새로운 팀원이 합류할 예정이었다.
+
+온보딩 가이드를 정리하다가 문득 코드베이스를 돌아보게 되었는데, 솔직히 자신 있게 "이 코드베이스 깔끔합니다"라고 말할 수 없는 상태였다. 기능을 빠르게 만들고, 빠르게 걷어내고, 또 새로운 걸 올리고. 그 과정에서 더 이상 사용하지 않는 파일, 의존성, export들이 여기저기 남아 있었다.
+
+사실 이런 건 알면서도 넘어가게 된다. "나중에 정리하지 뭐"라는 생각. 하지만 경험상 '나중에'는 오지 않는다. 지금 안 하면 영원히 안 하게 될 것 같아서, 신규 팀원이 합류하기 전에 코드베이스를 한 번 말끔하게 정리해보기로 했다.
+
+---
+
+## knip이 뭔데
+
+[knip](https://knip.dev/)은 JavaScript/TypeScript 프로젝트에서 사용하지 않는 파일, 의존성, export를 자동으로 찾아주는 도구다.
+
+실행 방법은 간단하다.
+
+```bash
+npx knip
+```
+
+별도 설치 없이 바로 실행할 수 있다. 프로젝트의 엔트리 포인트부터 시작해서 참조 관계를 분석하고, 어디서도 사용되지 않는 코드들을 찾아낸다.
+
+knip이 감지하는 항목들은 이렇다.
+
+- **Unused files** — 어디서도 import하지 않는 파일
+- **Unused dependencies** — `package.json`에만 있고 실제로 사용하지 않는 패키지
+- **Unlisted dependencies** — 코드에서 사용하지만 `package.json`에 명시하지 않은 패키지
+- **Unused exports** — export했지만 아무도 import하지 않는 함수, 변수, 타입
+- **Duplicate exports** — 같은 이름으로 중복 export된 항목
+
+100개 이상의 플러그인을 지원해서 Next.js, React 같은 프레임워크의 규약(예: `generateStaticParams`)도 알아서 인식해준다.
+
+---
+
+## 현실 직면
+
+회사 프로젝트에 처음으로 knip을 돌려봤다.
+
+```bash
+pnpm dlx knip --max-show-issues 5
+```
+
+결과가 나왔는데, 꽤 충격적이었다.
+
+```
+Unused files (130)
+eslint.config.mjs
+openapi-ts/auth.config.ts
+openapi-ts/setConfig.ts
+openapi-ts/unauth.config.ts
+src/constants/outer-links.ts
+...89 more items
+
+Unused dependencies (9)
+@chakra-ui/color-mode  package.json:21:6
+@chakra-ui/next-js     package.json:24:6
+@hey-api/client-fetch   package.json:34:6
+@svgr/webpack          package.json:39:6
+@wello-client/common   package.json:42:6
+...4 more items
+
+Unlisted dependencies (191)
+postcss-load-config  postcss.config.mjs:1:2
+@common/icon         src/app/(biz)/_components/layout/Footer.tsx:6:27
+...186 more items
+
+Unused exports (170)
+ZIP_WELLOBIZ_COMPANY_BUSINESS_DOCUMENT_AUTH_API  src/api/index.ts:782:14
+BLOG_ACCESS_HISTORY_API                          src/api/index.ts:966:14
+MEMBER_API                                       src/api/index.ts:1059:14
+...165 more items
+
+Unused exported types (54)
+InstitutionCompanyCheckReturnProps  interface  src/api/biz/institution-invitation.query.ts:8:18
+ExpertAdviceDetailParams            interface  src/app/(biz)/private/_types/type.ts:21:18
+...14 more items
+
+Unused exported enum members (57)
+TEMP     FILE_USAGE_TYPE  src/api/file-usage-type.ts:2:3
+NOTICE   FILE_USAGE_TYPE  src/api/file-usage-type.ts:3:3
+INQUIRY  FILE_USAGE_TYPE  src/api/file-usage-type.ts:4:3
+...52 more items
+```
+
+총 **631개**의 이슈. 사용하지 않는 파일만 130개, 목록에 없는 의존성이 191개, 사용하지 않는 export가 170개.
+
+솔직히 숫자를 보고 잠깐 멍했다. 이렇게까지 많이 쌓여 있었나 싶었다. 하지만 동시에 "이걸 정리하면 확실히 나아지겠다"는 확신이 들었다.
+
+---
+
+## 정리 시작
+
+631개를 한 번에 다 처리할 순 없으니, 카테고리별로 나눠서 진행했다.
+
+### Unused files — 사용하지 않는 파일 삭제
+
+130개의 파일이 프로젝트 어디서도 import되지 않고 있었다. 오래된 설정 파일, 이전 기능에서 쓰던 컴포넌트, 마이그레이션 과정에서 남은 잔재들이 대부분이었다.
+
+하나씩 확인하면서 진짜 사용하지 않는 파일들을 삭제했다. 무작정 지우지 않고, git blame으로 히스토리를 확인하며 신중하게 진행했다.
+
+### Unused dependencies — package.json 정리
+
+```json
+// 정리 전
+{
+  "dependencies": {
+    "@chakra-ui/color-mode": "^2.2.0",
+    "@chakra-ui/next-js": "^2.2.0",
+    "@svgr/webpack": "^8.1.0"
+    // 실제로 사용하지 않는 패키지들
+  }
+}
+
+// 정리 후 — 사용하지 않는 패키지 제거
+```
+
+한때 쓰다가 다른 라이브러리로 전환한 후 `package.json`에만 남아있던 패키지들을 제거했다.
+
+### Unlisted dependencies — 누락된 의존성 추가
+
+191개나 되는 의존성이 코드에서는 사용하고 있지만 `package.json`에 명시되어 있지 않았다. 다른 패키지의 의존성으로 깔려서 우연히 동작하고 있었던 거다. 이런 건 언제든 버전 업데이트나 패키지 교체 시 터질 수 있는 시한폭탄이다.
+
+```bash
+# 누락된 패키지를 명시적으로 추가
+pnpm add postcss-load-config
+```
+
+### Unused exports — export 키워드 제거
+
+사용하지 않는 export가 170개. API 모듈에서 특히 많았다. 한 파일에 수십 개의 API 함수를 정의해놓고 export했지만, 실제로 사용하는 건 일부뿐이었다.
+
+```typescript
+// 정리 전
+export const SOME_UNUSED_API = '/api/unused-endpoint';
+export const ANOTHER_UNUSED_API = '/api/another-unused';
+
+// 정리 후 — export 제거 또는 파일 자체 삭제
+const SOME_UNUSED_API = '/api/unused-endpoint';  // 내부에서만 필요한 경우
+// 아예 사용하지 않으면 삭제
+```
+
+### Unused exported types — 타입 정리
+
+사용하지 않는 interface, type도 54개나 있었다. 이것들이 쌓이면 코드를 읽는 사람 입장에서 혼란스럽다. "이 타입 어디서 쓰는 거지?" 하고 추적해봤자 아무 데서도 안 쓰고 있으니까.
+
+---
+
+## 결과
+
+정리를 마치고 다시 knip을 돌려봤다.
+
+```
+Unused files (6)
+src/components/SocialButton/constants/socials.ts
+src/styles/_mixins.scss
+src/styles/_vars.scss
+src/styles/colors/_primitives.scss
+src/styles/colors/_tokens.scss
+src/styles/colors/index.scss
+
+Unused dependencies (3)
+@hey-api/client-fetch  package.json:32:6
+@svgr/webpack          package.json:37:6
+@wello-client/common   package.json:40:6
+
+Unused exported enum members (13)
+WELLOBIZ  S3_CDN_TYPE  src/api/types/index.ts:11:3
+WELLO     S3_CDN_TYPE  src/api/types/index.ts:12:3
+REFUND    COMPANY_REQUIREMENT_TYPE  src/api/types/parent-code.ts:49:3
+...
+```
+
+631개에서 **36개**로.
+
+```
+항목                          개선 전    개선 후    감소      개선률
+─────────────────────────────────────────────────────────────────
+Unused files                  130개      6개       -124개    95.4%
+Unused dependencies             9개      3개        -6개    66.7%
+Unused devDependencies         11개      5개        -6개    54.5%
+Unlisted dependencies         191개      0개      -191개   100.0%
+Unlisted binaries               1개      0개        -1개   100.0%
+Unresolved imports              8개      8개         0개     0.0%
+Unused exports                170개      0개      -170개   100.0%
+Unused exported types          54개      0개       -54개   100.0%
+Unused exported enum members   57개     13개       -44개    77.2%
+Duplicate exports               1개      0개        -1개   100.0%
+─────────────────────────────────────────────────────────────────
+총합                          631개     36개      -595개    94.3%
+```
+
+남은 36개는 스타일 파일이나 레거시 enum처럼 당장 건드리기 어려운 것들이라 의도적으로 남겨두었다.
+
+그리고 체감상 가장 좋았던 건 **배포 시간이 36초 단축**된 것이다. 사용하지 않는 파일과 의존성을 제거하니 번들 사이즈가 줄어들면서 빌드 속도가 눈에 띄게 빨라졌다.
+
+---
+
+## 앞으로
+
+한 번 대청소했다고 끝이 아니다. 기능을 만들고 지우다 보면 죽은 코드는 또 쌓인다.
+
+그래서 knip 설정 파일을 만들어서 프로젝트에 맞게 커스터마이징했다.
+
+```json
+// knip.json
+{
+  "entry": ["src/app/**/page.tsx", "src/app/**/layout.tsx"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/**/*.test.ts", "src/**/*.stories.tsx"],
+  "ignoreDependencies": ["@types/*"]
+}
+```
+
+그리고 CI 파이프라인에 knip 검사를 추가했다.
+
+```bash
+# CI에서 실행 — 이슈가 하나라도 있으면 실패
+knip --no-progress --max-issues 0
+```
+
+이제 PR을 올릴 때마다 자동으로 검사가 돌아간다. 사용하지 않는 파일이나 의존성이 생기면 CI에서 바로 잡아주니까, 다시 631개까지 쌓이는 일은 없을 거다.
+
+---
