@@ -42,10 +42,15 @@ export const LeftSidebar = ({
     >
       <Card>
         <CardHeader className="items-center text-center">
-          <Avatar size="lg" fallback="JH" alt="Profile" />
+          <Avatar
+            size="lg"
+            fallback="JH"
+            alt="Profile"
+            src="/assets/images/profile.webp"
+          />
           <div className="mt-8">
             <CardTitle className="text-px-14">빈재홍</CardTitle>
-            <p className="mt-2 text-px-12 text-gray-500">Frontend Developer</p>
+            <p className="mt-2 text-px-12 text-gray-500">Frontend Engineer</p>
           </div>
         </CardHeader>
         <CardContent>
