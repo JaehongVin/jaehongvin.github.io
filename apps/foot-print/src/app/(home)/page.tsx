@@ -9,11 +9,11 @@ import { PostFilter } from './_components/PostFilter';
 export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   alternates: {
-    canonical: `${SITE_URL}/posts`,
+    canonical: SITE_URL,
   },
 };
 
-const PostListPage = async () => {
+const HomePage = async () => {
   const [posts, categories, tags] = await Promise.all([
     getAllPosts(),
     getAllCategories(),
@@ -26,7 +26,12 @@ const PostListPage = async () => {
   }));
 
   return (
-    <>
+    <div
+      className={cn(
+        'mx-auto flex w-full gap-px-24 px-16 py-24',
+        'dt:max-w-px-1200',
+      )}
+    >
       <Suspense fallback={null}>
         <LeftSidebar
           categories={categoryCounts}
@@ -39,8 +44,8 @@ const PostListPage = async () => {
           <PostFilter posts={posts} />
         </Suspense>
       </main>
-    </>
+    </div>
   );
 };
 
-export default PostListPage;
+export default HomePage;

@@ -68,7 +68,7 @@ export const LeftSidebar = ({
           <ul className="flex flex-col gap-px-4">
             <li>
               <Link
-                href="/posts"
+                href="/"
                 className={cn(
                   'flex w-full items-center justify-between rounded-px-4 px-6 py-4 text-px-12 text-gray-600 transition-colors hover:bg-gray-100/70 hover:text-gray-900',
                   isAllSelected && 'bg-gray-100 font-600 text-gray-900',
@@ -84,7 +84,7 @@ export const LeftSidebar = ({
               return (
                 <li key={category.name}>
                   <Link
-                    href={`/posts?category=${encodeURIComponent(category.name)}`}
+                    href={`/?category=${encodeURIComponent(category.name)}`}
                     className={cn(
                       'flex w-full items-center justify-between rounded-px-4 px-6 py-4 text-px-12 text-gray-600 transition-colors hover:bg-gray-100/70 hover:text-gray-900',
                       isActive && 'bg-gray-100 font-600 text-gray-900',
@@ -114,7 +114,7 @@ export const LeftSidebar = ({
               return (
                 <Link
                   key={tag}
-                  href={`/posts?tag=${encodeURIComponent(tag)}`}
+                  href={`/?tag=${encodeURIComponent(tag)}`}
                   className={cn(
                     isActive && '[&>span]:bg-gray-200 [&>span]:font-600',
                   )}

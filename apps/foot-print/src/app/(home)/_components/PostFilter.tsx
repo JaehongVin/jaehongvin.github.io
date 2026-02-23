@@ -41,7 +41,7 @@ export const PostFilter = ({ posts }: PostFilterProps) => {
           </p>
           {hasActiveFilter && (
             <Link
-              href="/posts"
+              href="/"
               className="mt-12 inline-block text-px-13 text-gray-600 underline"
             >
               전체 보기
