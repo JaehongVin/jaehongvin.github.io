@@ -1,0 +1,328 @@
+---
+title: "번들 160KB 다이어트, 의존성 11개를 걷어낸 이야기"
+description: "React Swiper, Yup 등 무거운 라이브러리 마이그레이션과 불필요한 의존성 9개 교체로 번들 사이즈 160KB를 줄인 과정"
+date: "2025-11-04"
+category: "DX"
+tags: ["번들 최적화", "의존성 관리", "리팩토링", "DX"]
+---
+
+## 들어가며
+
+[죽은 코드 631개를 정리](../posts/knip-codebase-cleanup)하고 나니, 이번에는 살아있는 코드가 눈에 들어왔다.
+
+`package.json`을 열어보니 "이거 진짜 필요해?" 싶은 패키지들이 한두 개가 아니었다. 한때 필요해서 설치했지만 이제는 더 가볍고 좋은 대안이 있는 라이브러리, 브라우저가 이미 지원하는 기능을 굳이 외부 패키지로 쓰고 있는 경우. 이런 것들이 조용히 번들 사이즈를 키우고 있었다.
+
+죽은 코드 다음은 뚱뚱한 코드다. 이번에는 의존성 11개를 걷어내면서 번들 사이즈 160KB를 줄인 과정을 정리해본다.
+
+---
+
+## 왜 의존성을 줄여야 하는가
+
+번들 사이즈는 사용자 경험에 직접적으로 영향을 미친다. 번들이 커지면 다운로드 시간이 늘어나고, JavaScript 파싱과 실행에 더 많은 시간이 걸린다. 이는 곧 LCP(Largest Contentful Paint)와 FCP(First Contentful Paint)의 저하로 이어진다.
+
+하지만 번들 사이즈만의 문제가 아니다. 외부 의존성 하나하나가 유지보수 부담이다. 메이저 버전이 올라가면 브레이킹 체인지에 대응해야 하고, 보안 취약점이 발견되면 패치해야 한다. 의존성이 많을수록 이 부담은 기하급수적으로 늘어난다.
+
+`package.json`에 한 줄 추가하는 건 쉽다. 하지만 그 한 줄을 빼는 건 어렵다.
+
+그래서 두 가지 방향으로 작업을 진행했다. 더 나은 대안이 있는 라이브러리는 **마이그레이션**하고, 네이티브 API로 대체 가능한 패키지는 **제거**했다.
+
+---
+
+## 라이브러리 마이그레이션
+
+### React Swiper → Embla Carousel
+
+프로젝트에서 캐러셀을 사용하는 파일이 43개였다. 모두 React Swiper를 쓰고 있었는데, 몇 가지 문제가 있었다.
+
+Swiper는 번들 사이즈가 무겁다. 기본 코어만으로도 상당한 크기를 차지하고, Navigation, Pagination 같은 모듈을 추가할 때마다 더 무거워진다. 특히 JavaScript 재평가(re-evaluation) 비용이 크다. 페이지 로드 시 Swiper의 JS가 파싱되고 실행되는 데 걸리는 시간이 체감될 정도였다.
+
+SSR 환경에서도 문제가 있었다. Swiper는 DOM에 직접 접근하는 방식이라 서버 사이드 렌더링과 궁합이 좋지 않았다.
+
+대안으로 선택한 건 [Embla Carousel](https://www.embla-carousel.com/)이다. headless 방식이라 스타일링이 자유롭고, 번들 사이즈가 가볍고, SSR을 기본 지원한다.
+
+```tsx
+// Before — React Swiper
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+
+const Carousel = ({ items }) => (
+  <Swiper modules={[Navigation, Pagination]} navigation pagination>
+    {items.map((item) => (
+      <SwiperSlide key={item.id}>{item.content}</SwiperSlide>
+    ))}
+  </Swiper>
+);
+```
+
+```tsx
+// After — Embla Carousel
+import useEmblaCarousel from 'embla-carousel-react';
+
+const Carousel = ({ items }) => {
+  const [emblaRef] = useEmblaCarousel();
+
+  return (
+    <div ref={emblaRef} className="overflow-hidden">
+      <div className="flex">
+        {items.map((item) => (
+          <div key={item.id} className="flex-[0_0_100%]">
+            {item.content}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+43개 파일을 마이그레이션한 결과, 번들 사이즈가 **2.78 MB → 2.72 MB**로 줄었다. 0.06 MB(약 60KB) 감소, **2.16% 개선**이다.
+
+#### 삽질: loop 모드 동작 차이
+
+마이그레이션 과정에서 가장 골치 아팠던 건 loop 모드였다.
+
+Swiper의 loop는 첫 번째와 마지막 슬라이드를 DOM 클로닝해서 무한 스크롤처럼 보이게 하는 방식이다. 반면 Embla의 loop는 스크롤 위치를 재조정하는 방식이라 근본적으로 동작이 다르다.
+
+특히 슬라이드 개수가 적을 때(2~3개) 문제가 두드러졌다. Swiper에서는 클로닝 덕분에 자연스럽게 돌아갔지만, Embla에서는 슬라이드 수가 뷰포트를 채우지 못하면 loop가 의도와 다르게 동작했다. 슬라이드 수에 따라 loop 활성화 여부를 분기 처리해야 했다.
+
+---
+
+### Yup → Zod
+
+폼 검증에 사용하던 Yup을 Zod로 마이그레이션했다. 변경 대상은 66개 파일이었다.
+
+Zod를 선택한 이유는 명확했다. TypeScript-first 설계라 스키마에서 타입이 자동으로 추론된다. Yup에서는 스키마와 타입을 따로 관리해야 했지만, Zod에서는 `z.infer`로 한 번에 해결된다. 폼 검증 속도도 Yup 대비 1.5~2배 빠르다.
+
+```typescript
+// Before — Yup
+import * as yup from 'yup';
+
+const schema = yup.object({
+  email: yup.string().email('이메일 형식이 아닙니다').required('필수 항목입니다'),
+  age: yup.number().min(0).max(150).required(),
+});
+
+type FormData = yup.InferType<typeof schema>;
+```
+
+```typescript
+// After — Zod
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email('이메일 형식이 아닙니다'),
+  age: z.number().min(0).max(150),
+});
+
+// 타입이 자동으로 추론된다
+type FormData = z.infer<typeof schema>;
+```
+
+Yup에서는 `.required()`를 빼먹으면 undefined가 들어올 수 있지만, Zod에서는 기본이 required다. `.optional()`을 명시적으로 붙여야 선택 필드가 된다. 이 차이가 사소해 보이지만, 66개 파일의 폼 검증 로직에서 "실수로 required 빠뜨린 필드"를 잡아낼 수 있었다.
+
+결과는 **2.72 MB → 2.70 MB**. 0.02 MB(약 20KB) 감소, **0.74% 개선**이다.
+
+#### 삽질: zod v4 브레이킹 체인지
+
+Yup에서 Zod로 전환하면서 zod 버전도 3.25.7에서 4.3.5로 업그레이드했다. v4에서 달라진 것들이 적지 않았다.
+
+`z.object().strict()`의 동작이 변경되었고, 에러 메시지 포맷도 달라졌다. 기존에 커스텀 에러 핸들러에서 에러 메시지를 파싱하는 로직이 있었는데, 포맷이 바뀌면서 같이 수정해야 했다. 66개 파일을 건드리는 마이그레이션이다 보니, 스키마 변환 자체보다 이런 부수적인 변경 사항 대응에 더 시간이 걸렸다.
+
+#### 삽질: 트리쉐이킹이 안 되던 원인
+
+번들 사이즈 감소 폭이 예상보다 작아서 원인을 파봤다.
+
+프로젝트의 common 패키지에서 스키마를 인자로 받아 리졸버를 반환하는 래핑 메서드를 만들어 쓰고 있었는데, 이걸 `index.ts`에서 re-export하고 있었다. 문제는 이 래퍼가 zod와 `@hookform/resolvers`를 import하고 있어서, 폼을 사용하지 않는 페이지에서도 zod + resolver가 번들에 포함되고 있었다.
+
+```typescript
+// common/index.ts — 문제의 원인
+export { createFormResolver } from './form/resolver'; // zod + resolvers 전부 번들에 포함
+
+// 해결 — index export에서 제거
+// 사용처에서 직접 import하도록 변경
+import { createFormResolver } from '@common/form/resolver';
+```
+
+index export에서 제거하고 사용처에서 직접 import하도록 변경하니, 트리쉐이킹이 제대로 동작하기 시작했다.
+
+---
+
+## 불필요한 의존성 교체
+
+라이브러리 마이그레이션은 "더 나은 대안"으로 갈아타는 작업이었다면, 이번에는 아예 대안이 필요 없는 경우다. 이미 브라우저나 프레임워크가 제공하는 기능을 외부 패키지로 쓰고 있었다.
+
+### 색상 유틸리티 → 해시 값 대체
+
+사용자 이름에서 고유한 색상을 생성하는 기능이 있었다. 이를 위해 `string-to-color`와 `tinycolor2`, 두 개의 패키지를 사용하고 있었다.
+
+```typescript
+// Before — 패키지 2개 사용
+import stringToColor from 'string-to-color';
+import tinycolor from 'tinycolor2';
+
+const color = tinycolor(stringToColor(userName)).toHexString();
+```
+
+```typescript
+// After — 해시 기반 색상 생성 (패키지 0개)
+const stringToHash = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return `hsl(${hash % 360}, 70%, 60%)`;
+};
+```
+
+해시 함수 몇 줄로 패키지 2개를 대체했다. 결과도 동일하게 동일한 입력에 대해 항상 같은 색상이 나온다.
+
+---
+
+### 애니메이션 → framer-motion 통합
+
+프로젝트에는 이미 `framer-motion`이 설치되어 있었다. 그런데 숫자 카운트업과 스크롤 애니메이션을 위해 별도 패키지를 쓰고 있었다.
+
+```tsx
+// Before — react-countup (별도 패키지)
+import CountUp from 'react-countup';
+
+<CountUp end={1000} duration={2} />
+```
+
+```tsx
+// After — framer-motion useSpring (이미 설치된 패키지 활용)
+const spring = useSpring(0, { duration: 2000 });
+
+useEffect(() => {
+  spring.set(1000);
+}, []);
+```
+
+`aos`(Animate On Scroll)도 마찬가지였다. 스크롤 시 요소가 나타나는 애니메이션인데, framer-motion의 `whileInView`로 동일한 효과를 낼 수 있다.
+
+```tsx
+// Before — aos (별도 패키지 + 전역 초기화 필요)
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
+AOS.init();
+<div data-aos="fade-up">콘텐츠</div>
+```
+
+```tsx
+// After — framer-motion whileInView
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+>
+  콘텐츠
+</motion.div>
+```
+
+이미 쓰고 있는 라이브러리로 대체한 거라 새로운 의존성 추가 없이 패키지 2개를 제거할 수 있었다.
+
+---
+
+### 네이티브 API 대체
+
+나머지 패키지들은 브라우저나 Node.js가 이미 제공하는 기능을 외부 패키지로 쓰고 있는 경우였다.
+
+**qs → URLSearchParams**
+
+```typescript
+// Before — qs
+import qs from 'qs';
+const query = qs.stringify({ page: 1, category: 'DX' });
+
+// After — 네이티브 URLSearchParams
+const query = new URLSearchParams({ page: '1', category: 'DX' }).toString();
+```
+
+**nanoid → crypto.randomUUID()**
+
+```typescript
+// Before — nanoid
+import { nanoid } from 'nanoid';
+const id = nanoid(); // "V1StGXR8_Z5jdHi6B-myT"
+
+// After — 네이티브 Web Crypto API
+const id = crypto.randomUUID(); // "550e8400-e29b-41d4-a716-446655440000"
+```
+
+이 외에도 `globby`를 Node.js 내장 `fs` + glob 패턴으로, `crypto-js`를 Web Crypto API로 대체했다.
+
+#### 삽질: 네이티브 API의 한계
+
+네이티브 API가 만능은 아니었다.
+
+`URLSearchParams`는 중첩 객체를 지원하지 않는다. `qs`는 `{ filter: { status: 'active' } }`를 `filter[status]=active`로 직렬화해주지만, `URLSearchParams`는 flat한 key-value만 지원한다. 중첩 구조가 필요한 API 호출 부분은 별도로 처리해야 했다.
+
+`crypto.randomUUID()`와 `nanoid`도 포맷이 다르다. nanoid는 21자 커스텀 알파벳 ID를 생성하고, randomUUID는 36자 UUID v4 포맷이다. ID를 DB에 저장하거나 URL에 쓰는 경우가 있어서 길이 변경의 영향 범위를 하나씩 확인해야 했다.
+
+---
+
+### HTML 파싱
+
+`html-react-parser`를 React 내장 `dangerouslySetInnerHTML`로 대체했다. 이름이 "dangerous"라서 꺼려지지만, 별도 스크립트로 XSS 방지 처리를 해주면 안전하게 사용할 수 있다.
+
+```tsx
+// Before — html-react-parser
+import parse from 'html-react-parser';
+
+<div>{parse(htmlContent)}</div>
+```
+
+```tsx
+// After — dangerouslySetInnerHTML + XSS 방지 처리
+<div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+```
+
+---
+
+## 결과
+
+두 단계에 걸친 의존성 정리 결과다.
+
+```
+단계                          개선 전     개선 후     감소        개선률
+──────────────────────────────────────────────────────────────────────
+라이브러리 마이그레이션          2.78 MB    2.70 MB    -0.08 MB    2.88%
+의존성 교체                    2.70 MB    2.62 MB    -0.08 MB    2.96%
+──────────────────────────────────────────────────────────────────────
+총합                          2.78 MB    2.62 MB    -0.16 MB    5.76%
+```
+
+제거하거나 교체한 의존성 상세 내역이다.
+
+```
+제거한 패키지          대체 방법                    분류
+──────────────────────────────────────────────────────────────
+tinycolor2            해시 기반 색상 생성            네이티브 JS
+string-to-color       해시 기반 색상 생성            네이티브 JS
+react-countup         framer-motion useSpring       기존 패키지 활용
+aos                   framer-motion whileInView     기존 패키지 활용
+globby                fs + glob pattern             Node.js 내장
+qs                    URLSearchParams               Web API
+nanoid                crypto.randomUUID()           Web Crypto API
+html-react-parser     dangerouslySetInnerHTML       React 내장
+crypto-js             Web Crypto API                Web Crypto API
+──────────────────────────────────────────────────────────────
+합계: 9개 패키지 제거   총 ~80KB (compressed) 감소
+```
+
+번들 사이즈 160KB가 대단한 숫자는 아닐 수 있다. 하지만 이건 단순히 용량의 문제가 아니다. 관리해야 할 의존성이 11개 줄었다는 건, 앞으로 11개의 브레이킹 체인지에 대응하지 않아도 된다는 뜻이다. 그리고 Swiper에서 Embla로, Yup에서 Zod로 전환하면서 얻은 SSR 지원, 타입 안전성, 검증 속도 향상은 번들 사이즈 수치에 드러나지 않는 개선이다.
+
+---
+
+## 앞으로
+
+이번 작업을 하면서 나름의 원칙이 생겼다. 의존성을 추가하기 전에 세 가지를 묻는다.
+
+1. **네이티브 API로 안 되는가?** — `URLSearchParams`, `crypto.randomUUID()`, Web Crypto API처럼 브라우저가 이미 제공하는 기능이 많다.
+2. **이미 쓰고 있는 라이브러리로 안 되는가?** — framer-motion 하나로 react-countup과 aos를 대체한 것처럼, 기존 의존성을 더 활용할 수 있는지 먼저 확인한다.
+3. **정말 이 라이브러리가 필요한가?** — 편의를 위해 설치하는 건 쉽지만, 나중에 걷어내는 건 어렵다.
+
+[knip으로 죽은 코드를 정리](../posts/knip-codebase-cleanup)한 것이 첫 번째 청소였다면, 이번 의존성 다이어트는 두 번째 청소였다. 코드베이스를 건강하게 유지하는 건 한 번의 대청소가 아니라 꾸준한 관리의 문제다.
