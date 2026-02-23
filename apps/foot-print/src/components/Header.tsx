@@ -6,7 +6,7 @@ export const Header = () => {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 w-full border-b border-gray-200/50 bg-white/70 backdrop-blur-px-12',
+        'sticky top-0 z-40 w-full border-b border-gray-200/50 bg-white/40 backdrop-blur-px-12',
       )}
     >
       <div

@@ -56,6 +56,6 @@ export const DEFAULT_META_DATA = {
     google: 'Kbv2bBA2vhn3zFObG94eQVpttG3cxgwD-s46ofI4g8E',
   },
   icons: {
-    icon: '/assets/icons/logo.svg',
+    icon: '/favicon.ico',
   },
 } satisfies Metadata;

@@ -16,6 +16,7 @@ const GlobalLayout = ({
       <body
         className={cn(
           'min-h-full bg-gray-50',
+          'bg-[#f7f7fa]',
           "bg-[url('/assets/images/global-bg.webp')] bg-fixed",
         )}
       >
