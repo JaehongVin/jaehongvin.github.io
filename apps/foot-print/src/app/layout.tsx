@@ -15,7 +15,7 @@ const GlobalLayout = ({
     <html lang="ko" className="size-full">
       <body
         className={cn(
-          'min-h-full bg-gray-50',
+          'min-h-full',
           'bg-[#f7f7fa]',
           "bg-[url('/assets/images/global-bg.webp')] bg-fixed",
         )}
