@@ -3,26 +3,27 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { ContentFilter } from '@/components/content/ContentFilter';
 import { LeftSidebar } from '@/components/content/LeftSidebar';
-import { SITE_DESCRIPTION, SITE_URL } from '@/constants/seo';
-import { getAllCategories, getAllPosts, getAllTags } from '@/utils/mdx';
+import { SITE_URL } from '@/constants/seo';
+import { getAllNoteCategories, getAllNotes, getAllNoteTags } from '@/utils/mdx';
 
 export const metadata: Metadata = {
-  description: SITE_DESCRIPTION,
+  title: '노트',
+  description: '짧은 기록과 메모를 모아둔 공간입니다.',
   alternates: {
-    canonical: SITE_URL,
+    canonical: `${SITE_URL}/notes`,
   },
 };
 
-const HomePage = async () => {
-  const [posts, categories, tags] = await Promise.all([
-    getAllPosts(),
-    getAllCategories(),
-    getAllTags(),
+const NotesPage = async () => {
+  const [notes, categories, tags] = await Promise.all([
+    getAllNotes(),
+    getAllNoteCategories(),
+    getAllNoteTags(),
   ]);
 
   const categoryCounts = categories.map((category) => ({
     name: category,
-    count: posts.filter((post) => post.category === category).length,
+    count: notes.filter((note) => note.category === category).length,
   }));
 
   return (
@@ -36,17 +37,17 @@ const HomePage = async () => {
         <LeftSidebar
           categories={categoryCounts}
           tags={tags}
-          totalCount={posts.length}
-          basePath=""
+          totalCount={notes.length}
+          basePath="notes"
         />
       </Suspense>
       <main className={cn('min-w-0 flex-1', 'dt:max-w-px-900')}>
         <Suspense fallback={null}>
-          <ContentFilter posts={posts} basePath="posts" />
+          <ContentFilter posts={notes} basePath="notes" />
         </Suspense>
       </main>
     </div>
   );
 };
 
-export default HomePage;
+export default NotesPage;

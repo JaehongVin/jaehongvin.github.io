@@ -1,6 +1,6 @@
 import { DetailLayout } from '@/components/content/DetailLayout';
 
-const PostDetailLayout = ({
+const NoteDetailLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -8,4 +8,4 @@ const PostDetailLayout = ({
   return <DetailLayout>{children}</DetailLayout>;
 };
 
-export default PostDetailLayout;
+export default NoteDetailLayout;

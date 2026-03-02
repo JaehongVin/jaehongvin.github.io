@@ -1,8 +1,27 @@
+'use client';
+
 import { cn } from '@common/ui/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { MobileMenu } from './MobileMenu';
+
+const NAV_ITEMS = [
+  { href: '/', label: '발자취' },
+  { href: '/notes', label: '노트' },
+] as const;
 
 export const Header = () => {
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/' || pathname.startsWith('/posts');
+    }
+
+    return pathname.startsWith(href);
+  };
+
   return (
     <header
       className={cn(
@@ -28,6 +47,21 @@ export const Header = () => {
           발자취
         </Link>
 
+        <nav className="hidden items-center gap-px-4 tb:flex">
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'rounded-px-6 px-10 py-4 text-px-14 text-gray-500 transition-colors hover:text-gray-900',
+                isActive(item.href) && 'font-600 text-gray-900',
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         <div className="flex items-center gap-px-4">
           <a
             href="https://github.com/JaehongVin"
@@ -48,28 +82,7 @@ export const Header = () => {
             </svg>
           </a>
 
-          <button
-            type="button"
-            className="flex-center size-32 rounded-px-6 text-gray-500 transition-colors hover:bg-gray-100/70 hover:text-gray-700 tb:hidden"
-            aria-label="메뉴 열기"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
+          <MobileMenu />
         </div>
       </div>
     </header>

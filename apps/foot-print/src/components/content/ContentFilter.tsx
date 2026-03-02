@@ -12,11 +12,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { PostMeta } from '@/types/post';
 
-interface PostFilterProps {
+interface ContentFilterProps {
   posts: PostMeta[];
+  basePath: string;
 }
 
-export const PostFilter = ({ posts }: PostFilterProps) => {
+export const ContentFilter = ({ posts, basePath }: ContentFilterProps) => {
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get('category');
   const currentTag = searchParams.get('tag');
@@ -41,7 +42,7 @@ export const PostFilter = ({ posts }: PostFilterProps) => {
           </p>
           {hasActiveFilter && (
             <Link
-              href="/"
+              href={`/${basePath}`}
               className="mt-12 inline-block text-px-13 text-gray-600 underline"
             >
               전체 보기
@@ -55,7 +56,7 @@ export const PostFilter = ({ posts }: PostFilterProps) => {
   return (
     <article className="flex flex-col gap-px-12">
       {filteredPosts.map((post) => (
-        <Link key={post.slug} href={`/posts/${post.slug}`}>
+        <Link key={post.slug} href={`/${basePath}/${post.slug}`}>
           <Card className="cursor-pointer transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="flex items-center gap-px-6">

@@ -102,6 +102,8 @@ const DialogDescription = ({
   />
 );
 
+const DialogPrimitiveContent = DialogPrimitive.Content;
+
 export {
   Dialog,
   DialogPortal,
@@ -113,6 +115,7 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
+  DialogPrimitiveContent,
 };
 export type {
   DialogOverlayProps,

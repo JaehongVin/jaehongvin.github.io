@@ -151,7 +151,45 @@
   backdrop-filter: blur(calc(--value(integer) * var(--px-to-rem)));
 }
 
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes overlay-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes drawer-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes drawer-slide-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
 @theme {
+  --animate-overlay-in: overlay-fade-in 250ms ease;
+  --animate-overlay-out: overlay-fade-out 200ms ease;
+  --animate-drawer-up: drawer-slide-up 350ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-drawer-down: drawer-slide-down 250ms cubic-bezier(0.32, 0.72, 0, 1);
+
   --breakpoint-tb: 768px;
   --breakpoint-dt: 1280px;
 
