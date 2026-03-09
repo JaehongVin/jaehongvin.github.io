@@ -1,0 +1,202 @@
+---
+title: "Next.js 16 cacheComponents"
+description: "기존 SSG/ISR/SSR과 cacheComponents의 차이, 설정과 핵심 API 정리"
+date: "2026-03-09"
+category: "프론트엔드"
+tags: ["NextJS"]
+---
+
+## cacheComponents란
+
+Next.js 16에서 기존 experimental PPR(Partial Prerendering)이 정식으로 채택되면서 등장한 설정이다.
+
+`next.config.ts`에서 `cacheComponents: true` 하나만 설정하면 3가지가 동시에 활성화된다:
+
+- **Partial Prerendering (PPR)** — 하나의 라우트 안에서 정적/동적 콘텐츠를 혼합
+- **`use cache` 디렉티브** — 컴포넌트/함수 단위의 캐싱
+- **Dynamic IO** — 동적 데이터 접근을 자동 감지
+
+핵심은 **라우트 단위가 아닌 컴포넌트 단위**로 정적/캐시/동적을 결정할 수 있다는 것이다.
+
+---
+
+## 기존 렌더링 전략
+
+Next.js에서는 라우트 세그먼트의 `revalidate` 설정에 따라 렌더링 전략이 결정되었다.
+
+### SSG (Static Site Generation)
+
+- `export const revalidate` 미설정 또는 `false`
+- 빌드 타임에 HTML을 생성하고 그대로 제공
+- 가장 빠르지만 데이터 갱신이 불가능
+
+### ISR (Incremental Static Regeneration)
+
+- `export const revalidate = N` (N > 0)
+- 캐시된 페이지를 제공하면서 N초마다 백그라운드에서 페이지를 재생성
+- 빠르지만 재생성 주기까지는 최신 데이터가 아닐 수 있음
+
+### SSR (Server-Side Rendering)
+
+- `export const revalidate = 0` 또는 `dynamic = 'force-dynamic'`
+- 매 요청마다 서버에서 새로 렌더링
+- 항상 최신 데이터지만 느림
+
+### Streaming
+
+- SSR에서 `<Suspense>`로 부분적 응답을 보내는 방식
+- 셸을 먼저 전송하고 나머지를 스트리밍
+
+### 문제점
+
+기존 방식은 **라우트 단위**로 전략이 결정된다. 한 페이지 안에 정적 데이터와 동적 데이터가 섞여 있어도 라우트 전체가 하나의 전략을 따라야 했다.
+
+```text
+기존 방식 — 라우트 단위로 하나만 선택:
+
+  SSG (빠름, 갱신 불가)
+     revalidate 미설정
+     빌드 시 생성 → 그대로 제공
+
+  ISR (빠름, 주기적 갱신)
+     revalidate = 60
+     캐시 제공 → 60초 후 백그라운드 재생성
+     ※ 재생성 전까지 stale 가능
+
+  SSR (느림, 항상 최신)
+     revalidate = 0
+     매 요청마다 서버에서 렌더링
+
+  문제:
+  /product/123
+     ├─ 정적 데이터 (상품명, 설명)  ─┐
+     └─ 동적 데이터 (재고, 가격)   ─┘──▶ 라우트 전체가 하나의 전략
+```
+
+예를 들어 상품 페이지에서 상품명은 거의 안 바뀌고 재고/가격은 실시간이어야 하는데, 기존에는 페이지 전체를 SSR로 처리하거나, SSG로 만들고 클라이언트에서 동적 데이터를 따로 fetching해야 했다.
+
+---
+
+## cacheComponents가 해결하는 것
+
+cacheComponents는 **컴포넌트 단위**로 정적/캐시/동적을 결정한다. 빌드 타임에 각 컴포넌트를 분석해서 자동으로 분류한다:
+
+- 순수 연산, 정적 콘텐츠 → **정적 셸** (즉시 전송)
+- `use cache`가 선언된 컴포넌트 → **캐시 콘텐츠** (정적 셸에 포함, 주기적 갱신 가능)
+- 런타임 데이터 접근 → **동적** (`<Suspense>` 경계 안에서 스트리밍)
+
+```text
+cacheComponents 방식 — 컴포넌트 단위로 혼합:
+
+  /product/123
+     ├─ 정적 셸 (레이아웃, 상품명)  ──▶ 즉시 전송
+     ├─ 캐시 (추천 상품, use cache) ──▶ 셸에 포함, 주기적 갱신
+     └─ 동적 (재고, 가격, Suspense) ──▶ 준비되면 스트리밍
+```
+
+하나의 라우트 안에서 정적인 부분은 빌드 타임에 생성하고, 캐시 가능한 부분은 `use cache`로 관리하고, 동적인 부분만 요청 시점에 처리한다. 사용자는 정적 셸을 즉시 보면서 동적 콘텐츠가 로드되길 기다리게 된다.
+
+---
+
+## 설정과 핵심 API
+
+### 설정
+
+```typescript
+// next.config.ts
+const nextConfig = {
+  cacheComponents: true,
+};
+```
+
+이 한 줄로 PPR, `use cache`, Dynamic IO가 모두 활성화된다.
+
+### `use cache`
+
+컴포넌트나 함수 상단에 선언하면 해당 단위가 캐시된다.
+
+```typescript
+async function RecommendedProducts({ category }: { category: string }) {
+  'use cache';
+  const products = await getProducts(category);
+  return <ProductList products={products} />;
+}
+```
+
+- 함수의 인자가 자동으로 **캐시 키**가 된다
+- `category`가 다르면 별도로 캐시됨 → 개인화 캐싱도 가능
+
+### `cacheLife()`
+
+캐시의 지속 시간을 설정한다.
+
+```typescript
+import { cacheLife } from 'next/cache';
+
+async function RecommendedProducts() {
+  'use cache';
+  cacheLife('hours');
+  // ...
+}
+```
+
+- 프리셋: `'hours'`, `'days'`, `'weeks'`, `'max'`
+- 커스텀 설정도 가능
+
+### `cacheTag()` + `revalidateTag()`
+
+태그를 붙여서 필요할 때 특정 캐시만 재검증할 수 있다.
+
+```typescript
+import { cacheTag } from 'next/cache';
+
+async function ProductPrice({ id }: { id: string }) {
+  'use cache';
+  cacheTag(`product-${id}`);
+  // ...
+}
+```
+
+```typescript
+// Server Action이나 Route Handler에서
+import { revalidateTag } from 'next/cache';
+revalidateTag('product-123');
+```
+
+### `<Suspense>` 경계
+
+동적 콘텐츠는 `<Suspense>`로 감싸서 스트리밍한다.
+
+```typescript
+import { Suspense } from 'react';
+
+export default function ProductPage() {
+  return (
+    <div>
+      <ProductInfo />          {/* 정적 셸 */}
+      <RecommendedProducts />  {/* use cache로 캐시 */}
+      <Suspense fallback={<Skeleton />}>
+        <StockPrice />         {/* 동적, 스트리밍 */}
+      </Suspense>
+    </div>
+  );
+}
+```
+
+---
+
+## 기존 전략과의 비교
+
+- **SSG** → cacheComponents에서는 동적 연산이 없으면 자동으로 정적 프리렌더링. 별도 설정 불필요
+- **ISR** → `use cache` + `cacheLife()`로 대체. 라우트가 아닌 컴포넌트 단위로 캐시 주기 설정
+- **SSR** → `<Suspense>` 경계 안에서 동적 데이터를 요청 시점에 처리
+- **Streaming** → 동적 콘텐츠는 자동으로 스트리밍. `<Suspense>`의 fallback이 정적 셸에 포함됨
+
+기존에는 라우트 전체에 `revalidate` 값을 하나 설정해야 했지만, cacheComponents에서는 컴포넌트마다 다른 캐시 전략을 적용할 수 있다.
+
+---
+
+## 참고
+
+- `output: 'export'` (정적 내보내기)와는 함께 사용할 수 없다. 서버 기반 배포(Vercel, Node.js 서버 등)가 필요하다
+- 개발 모드에서 동적 데이터를 `<Suspense>` 없이 접근하면 에러가 발생한다
