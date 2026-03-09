@@ -11,6 +11,9 @@ const getContentPath = (contentDir: ContentDir) =>
 //* 범용 콘텐츠 함수
 const getAllContent = async (contentDir: ContentDir) => {
   const contentPath = getContentPath(contentDir);
+
+  if (!fs.existsSync(contentPath)) return [];
+
   const files = fs.readdirSync(contentPath);
 
   return files
@@ -59,6 +62,9 @@ const getContentBySlug = async (
 
 const getAllContentSlugs = async (contentDir: ContentDir) => {
   const contentPath = getContentPath(contentDir);
+
+  if (!fs.existsSync(contentPath)) return [];
+
   const files = fs.readdirSync(contentPath);
 
   return files
