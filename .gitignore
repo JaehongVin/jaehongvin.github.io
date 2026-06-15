@@ -40,3 +40,6 @@ yarn-error.log*
 # AI
 .claude/
 CLAUDE.md
+
+# Personal resume docs (not for repo)
+/reference-resumes.md

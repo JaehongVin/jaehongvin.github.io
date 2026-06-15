@@ -10,6 +10,135 @@ export const metadata: Metadata = {
   },
 };
 
+interface ContactItem {
+  label: string;
+  value: string;
+  href?: string;
+}
+
+const CONTACTS: ContactItem[] = [
+  { label: '전화', value: '010-3029-1190', href: 'tel:01030291190' },
+  {
+    label: '이메일',
+    value: 'dnflwoghddl@gmail.com',
+    href: 'mailto:dnflwoghddl@gmail.com',
+  },
+  {
+    label: '깃허브',
+    value: 'github.com/jaehongVin',
+    href: 'https://github.com/jaehongVin',
+  },
+  {
+    label: '블로그',
+    value: 'jaehongvin.github.io',
+    href: 'https://jaehongvin.github.io',
+  },
+];
+
+interface SkillGroup {
+  category: string;
+  items: string;
+}
+
+const SKILLS: SkillGroup[] = [
+  {
+    category: 'Frontend',
+    items:
+      'JavaScript(ES6+), TypeScript, React(Next.js), Vue(Nuxt.js), Tanstack Query, Zustand, Tailwind, SCSS',
+  },
+  { category: 'Backend', items: 'Node.js(Express)' },
+  {
+    category: 'etc',
+    items: 'Agile(Scrum, Kanban), Jira, Notion, Swagger, Figma, Sentry',
+  },
+];
+
+interface AwardItem {
+  title: string;
+  meta: string;
+  description: string;
+}
+
+const AWARDS: AwardItem[] = [
+  {
+    title: '전국 기능 경기 대회',
+    meta: '2014.10 · 동메달 · 국제 기능 올림픽 대회 한국 위원회',
+    description:
+      '모바일 로보틱스 직종, C언어를 이용하여 로봇 제어 및 알고리즘 과제 수행',
+  },
+  {
+    title: '경기도 기능 경기 대회',
+    meta: '2014.04 · 금메달 · 경기도 기능 경기 위원회',
+    description:
+      '모바일 로보틱스 직종, C언어를 이용하여 로봇 제어 및 알고리즘 과제 수행',
+  },
+  {
+    title: '경기도 기능 경기 대회',
+    meta: '2013.04 · 은메달 · 경기도 기능 경기 위원회',
+    description:
+      '모바일 로보틱스 직종, C언어를 이용하여 로봇 제어 및 알고리즘 과제 수행',
+  },
+];
+
+interface CertItem {
+  title: string;
+  date: string;
+}
+
+const CERTIFICATES: CertItem[] = [{ title: '정보처리기사', date: '2019.11' }];
+
+interface EducationItem {
+  school: string;
+  degree: string;
+  period: string;
+  note?: string;
+}
+
+const EDUCATION: EducationItem[] = [
+  {
+    school: '한국공학대학교',
+    degree: '정보통신공학과 학사',
+    period: '2015년 3월 - 2019년 2월',
+    note: '구 한국산업기술대학교 · 학점 3.06',
+  },
+  {
+    school: '안산공업고등학교',
+    degree: '전자과',
+    period: '2012년 3월 - 2015년 2월',
+  },
+];
+
+interface ExperienceItem {
+  company: string;
+  role: string;
+  period: string;
+  description: string;
+}
+
+const EXPERIENCE: ExperienceItem[] = [
+  {
+    company: '주식회사 웰로',
+    role: 'Frontend Engineer',
+    period: '2024년 6월 - 2026년 3월',
+    description:
+      '개인 맞춤형 복지 혜택 추천, 고향사랑기부제, 기업 솔루션 등 공공/복지 도메인 서비스를 운영하는 회사입니다. 웰로/웰로비즈/고향사랑기부제 3개 서비스와 백오피스를 아우르는 모노레포 환경의 프론트엔드를 담당했습니다.',
+  },
+  {
+    company: '주식회사 비투지게임즈',
+    role: 'Frontend Engineer',
+    period: '2023년 2월 - 2024년 6월',
+    description:
+      '판타지 스포츠 웹 게임 플랫폼을 운영하는 회사입니다. 카드 거래/랭킹/커뮤니티 등 게임 핵심 기능을 담당했습니다.',
+  },
+  {
+    company: '빈페이지(주)',
+    role: 'Full-stack Engineer',
+    period: '2020년 10월 - 2022년 7월',
+    description:
+      '코딩 없이 홈페이지를 만드는 드래그앤드롭 웹 빌더 서비스를 운영하는 회사입니다. 외부 서비스 연동과 성능 개선 등 서비스 전반을 풀스택으로 담당했습니다.',
+  },
+];
+
 interface ProjectItem {
   title: string;
   summary: string;
@@ -24,22 +153,16 @@ interface ProblemSolvingItem {
   note: string | null;
 }
 
-interface CareerItem {
+interface ProjectGroup {
   company: string;
-  role: string;
-  period: string;
-  tech: string;
   description: string;
   projects: ProjectItem[];
   problemSolving: ProblemSolvingItem[];
 }
 
-const CAREER: CareerItem[] = [
+const PROJECTS: ProjectGroup[] = [
   {
     company: '주식회사 웰로',
-    role: 'FE 매니저',
-    period: '2024.06 ~ 재직중',
-    tech: 'Next.js(v14~16, App Router), Tanstack Router, TypeScript, TailwindCSS, Tanstack Query, Zustand',
     description:
       '맞춤형 복지 혜택 추천, 고향사랑기부제, 기업 솔루션 등 공공/복지 도메인의 모노레포 환경 프론트엔드 개발. 3개 서비스(웰로, 웰로 비즈, 고향사랑기부제) + 백오피스 전반의 FE 개발',
     projects: [
@@ -202,9 +325,6 @@ const CAREER: CareerItem[] = [
   },
   {
     company: '주식회사 비투지게임즈',
-    role: 'FE 매니저',
-    period: '2023.02 ~ 2024.06',
-    tech: 'Nuxt.js(v2, Composition API), TypeScript, Pinia, Vuetify',
     description:
       '판타지 스포츠 웹 게임 플랫폼의 프론트엔드 개발. 카드 거래, 랭킹, 커뮤니티 등 게임 핵심 기능 개발 및 배포 환경 관리.',
     projects: [
@@ -242,51 +362,7 @@ const CAREER: CareerItem[] = [
     ],
   },
   {
-    company: '주식회사 비트스타',
-    role: 'FE 사원',
-    period: '2022.11 ~ 2023.01',
-    tech: 'React.js, Node.js, Express, jQuery, MySQL',
-    description:
-      'PFP NFT 마켓플레이스 MVP 개발 및 PM/리드 부재 상황에서 개발 프로세스 정립.',
-    projects: [
-      {
-        title: 'NFT 마켓플레이스 MVP',
-        summary:
-          'PFP NFT를 구매하고 다양한 용품을 거래할 수 있는 마켓플레이스 MVP 개발',
-        details: [
-          'IPFS 기반 분산 스토리지 연동으로 NFT 메타데이터 관리',
-          'MetaMask 지갑 연동 및 트랜잭션 플로우 구현',
-          '각종 매출 및 회원 관리 대시보드, 토큰 이동, 로그인/리캡차 기능',
-          '런칭 초기 사용자 100명 확보, PFP NFT 판매 매출 5억원 달성',
-        ],
-      },
-      {
-        title: '개발 프로세스 정립',
-        summary:
-          'PM 및 리드 개발자 부재 상황에서 직접 의견을 내어 개발/배포 체계 정립',
-        details: [
-          '사내 메신저 도입 (Slack): 구두 커뮤니케이션 → 부서별 채널 히스토리 관리로 업무 추적 용이성 확보',
-          '프로젝트 관리 툴 도입 (Jira): 작업 추적, 진행률 확인, 일정 관리 체계화',
-          '버전 관리 개선: SFTP 배포 → Git + GitHub + Gitflow 방식 전환으로 배포 누락 이슈 차단 및 배포 시간 단축',
-        ],
-      },
-    ],
-    problemSolving: [
-      {
-        title: 'jQuery → React 마이그레이션',
-        problem:
-          'MVP 검증 완료 후 서비스 고도화를 위해 모던 프레임워크로 전환 필요.',
-        approach: 'jQuery 기반 코드를 React 컴포넌트 기반으로 마이그레이션.',
-        result: '컴포넌트 재사용성 및 개발 유지보수성 향상.',
-        note: null,
-      },
-    ],
-  },
-  {
     company: '빈페이지(주)',
-    role: 'FS 사원',
-    period: '2020.10 ~ 2022.07',
-    tech: 'Node.js, Express, jQuery, MySQL, AWS EC2',
     description:
       '드래그앤드롭 기반 홈페이지 제작 툴의 풀스택 개발. 외부 서비스 연동, 성능 개선, 기능 개발 등 서비스 전반 담당.',
     projects: [
@@ -358,37 +434,149 @@ const PortfolioPage = () => (
         Frontend Engineer · 경력 5년+
       </p>
       <p className="mt-12 text-px-14 leading-px-22 text-gray-600 tb:text-px-15">
-        웹 성능 최적화와 DX 개선에 관심이 많고, 측정 가능한 개선을 추구합니다.
-        AI를 활용한 개발 워크플로우 자동화에 적극적으로 도입하고, 필요하면 직접
-        POC를 진행해 팀에 제안합니다.
+        빠르게 변하는 스타트업 환경에서 길이 없을 때 길을 만들며 일해 온
+        프론트엔드 엔지니어입니다. 반복되는 일은 누가 시키기 전에 자동화하고,
+        불편한 흐름은 더 나은 UX로 직접 제안하며, 느린 화면은 수치로 전후를
+        남기며 끝까지 빠르게 만듭니다. 변화에 빠르게 적응하면서 자동화와 UX·성능
+        개선으로 팀과 사용자의 경험을 함께 끌어올리는 일을 가장 좋아합니다.
       </p>
     </section>
 
     <section className="mb-48">
+      <SectionTitle>인적사항</SectionTitle>
+      <dl className="flex flex-col gap-px-8">
+        {CONTACTS.map((contact) => (
+          <div key={contact.label} className="flex gap-px-12 text-px-14">
+            <dt className="w-72 shrink-0 font-600 text-gray-500">
+              {contact.label}
+            </dt>
+            <dd className="text-gray-700">
+              {contact.href ? (
+                <a
+                  href={contact.href}
+                  className="underline-offset-2 hover:underline"
+                  target={
+                    contact.href.startsWith('http') ? '_blank' : undefined
+                  }
+                  rel={
+                    contact.href.startsWith('http') ? 'noreferrer' : undefined
+                  }
+                >
+                  {contact.value}
+                </a>
+              ) : (
+                contact.value
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <section className="mb-48">
+      <SectionTitle>기술</SectionTitle>
+      <div className="flex flex-col gap-px-12">
+        {SKILLS.map((skill) => (
+          <div
+            key={skill.category}
+            className="flex flex-col gap-px-4 tb:flex-row tb:gap-px-16"
+          >
+            <span className="w-88 shrink-0 text-px-14 font-700 text-gray-700">
+              {skill.category}
+            </span>
+            <span className="text-px-14 leading-px-22 text-gray-600">
+              {skill.items}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section className="mb-48">
+      <SectionTitle>수상 내역</SectionTitle>
+      <div className="flex flex-col gap-px-16">
+        {AWARDS.map((award) => (
+          <div key={award.meta}>
+            <p className="text-px-14 font-600 text-gray-800">{award.title}</p>
+            <p className="mt-2 text-px-13 text-gray-500">{award.meta}</p>
+            <p className="mt-4 text-px-13 leading-px-20 text-gray-600">
+              {award.description}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section className="mb-48">
+      <SectionTitle>자격증</SectionTitle>
+      <div className="flex flex-col gap-px-8">
+        {CERTIFICATES.map((cert) => (
+          <p key={cert.title} className="text-px-14 text-gray-700">
+            <span className="font-600">{cert.title}</span>
+            <span className="ml-8 text-px-13 text-gray-500">{cert.date}</span>
+          </p>
+        ))}
+      </div>
+    </section>
+
+    <section className="mb-48">
+      <SectionTitle>학력</SectionTitle>
+      <div className="flex flex-col gap-px-16">
+        {EDUCATION.map((education) => (
+          <div key={education.school}>
+            <p className="text-px-14 font-600 text-gray-800">
+              {education.school}
+            </p>
+            <p className="mt-2 text-px-13 text-gray-600">{education.degree}</p>
+            <p className="mt-2 text-px-13 text-gray-500">{education.period}</p>
+            {education.note && (
+              <p className="mt-2 text-px-12 text-gray-400">{education.note}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section className="mb-48">
       <SectionTitle>경력</SectionTitle>
+      <div className="flex flex-col gap-px-20">
+        {EXPERIENCE.map((experience) => (
+          <div key={experience.company}>
+            <h3 className="text-px-16 font-700 text-gray-900">
+              {experience.company}
+            </h3>
+            <p className="mt-2 text-px-13 text-gray-500">
+              {experience.role} · {experience.period}
+            </p>
+            <p className="mt-8 text-px-13 leading-px-20 text-gray-600">
+              {experience.description}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <SectionTitle>프로젝트</SectionTitle>
       <div className="flex flex-col gap-px-48">
-        {CAREER.map((career) => (
-          <article key={career.company}>
+        {PROJECTS.map((group) => (
+          <article key={group.company}>
             <div className="mb-20">
               <h3 className="text-px-18 font-700 text-gray-900">
-                {career.company}
+                {group.company}
               </h3>
-              <p className="mt-2 text-px-13 text-gray-500">
-                {career.role} · {career.period}
-              </p>
-              <p className="mt-4 text-px-12 text-gray-400">{career.tech}</p>
               <p className="mt-8 text-px-13 leading-px-20 text-gray-600">
-                {career.description}
+                {group.description}
               </p>
             </div>
 
-            {career.projects.length > 0 && (
+            {group.projects.length > 0 && (
               <div className="mb-20">
                 <h4 className="mb-12 text-px-14 font-600 text-gray-700">
                   서비스 개발
                 </h4>
                 <div className="flex flex-col gap-px-16">
-                  {career.projects.map((project) => (
+                  {group.projects.map((project) => (
                     <div
                       key={project.title}
                       className="rounded-px-8 border border-gray-200/80 bg-white/60 p-16 tb:p-20"
@@ -419,13 +607,13 @@ const PortfolioPage = () => (
               </div>
             )}
 
-            {career.problemSolving.length > 0 && (
+            {group.problemSolving.length > 0 && (
               <div>
                 <h4 className="mb-12 text-px-14 font-600 text-gray-700">
                   문제 해결 및 기술 개선
                 </h4>
                 <div className="flex flex-col gap-px-16">
-                  {career.problemSolving.map((item) => (
+                  {group.problemSolving.map((item) => (
                     <div
                       key={item.title}
                       className="rounded-px-8 border border-gray-200/80 bg-white/60 p-16 tb:p-20"
@@ -467,46 +655,6 @@ const PortfolioPage = () => (
             )}
           </article>
         ))}
-      </div>
-    </section>
-
-    <section>
-      <SectionTitle>학력 & 자격</SectionTitle>
-      <div className="flex flex-col gap-px-8">
-        <p className="text-px-14 text-gray-700">
-          <span className="font-600">한국산업기술대학교</span>
-          <span className="ml-8 text-px-13 text-gray-500">
-            정보통신공학과 졸업 (2015.03 ~ 2019.02)
-          </span>
-        </p>
-        <p className="text-px-14 text-gray-700">
-          <span className="font-600">정보처리기사</span>
-          <span className="ml-8 text-px-13 text-gray-500">2019.11</span>
-        </p>
-        <p className="text-px-14 text-gray-700">
-          <span className="font-600">
-            전국 기능 경기 대회 (모바일 로보틱스)
-          </span>
-          <span className="ml-8 text-px-13 text-gray-500">
-            동메달 (2014.10)
-          </span>
-        </p>
-        <p className="text-px-14 text-gray-700">
-          <span className="font-600">
-            경기도 기능 경기 대회 (모바일 로보틱스)
-          </span>
-          <span className="ml-8 text-px-13 text-gray-500">
-            금메달 (2014.04)
-          </span>
-        </p>
-        <p className="text-px-14 text-gray-700">
-          <span className="font-600">
-            경기도 기능 경기 대회 (모바일 로보틱스)
-          </span>
-          <span className="ml-8 text-px-13 text-gray-500">
-            은메달 (2013.04)
-          </span>
-        </p>
       </div>
     </section>
   </main>
