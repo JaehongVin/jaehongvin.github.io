@@ -543,6 +543,14 @@ const PortfolioPage = () => (
     </section>
 
     <section className="mb-48">
+      <SectionTitle>병역</SectionTitle>
+      <p className="text-px-14 text-gray-700">
+        <span className="font-600">군필</span>
+        <span className="ml-8 text-px-13 text-gray-500">2016.01 ~ 2018.12</span>
+      </p>
+    </section>
+
+    <section className="mb-48">
       <SectionTitle>경력</SectionTitle>
       <div className="flex flex-col gap-px-20">
         {EXPERIENCE.map((experience) => (
