@@ -113,6 +113,7 @@ interface ExperienceItem {
   role: string;
   period: string;
   description: string;
+  tech: string[];
 }
 
 const EXPERIENCE: ExperienceItem[] = [
@@ -121,7 +122,15 @@ const EXPERIENCE: ExperienceItem[] = [
     role: 'Frontend Engineer',
     period: '2024년 6월 - 2026년 3월',
     description:
-      '개인 맞춤형 복지 혜택 추천, 고향사랑기부제, 기업 솔루션 등 공공/복지 도메인 서비스를 운영하는 회사입니다. 웰로/웰로비즈/고향사랑기부제 3개 서비스와 백오피스를 아우르는 모노레포 환경의 프론트엔드를 담당했습니다.',
+      '개인 맞춤형 복지 혜택 추천, 고향사랑기부제, 기업 솔루션 등 누적 이용자 500만 규모의 공공/복지 도메인 서비스를 운영하는 회사입니다. 웰로/웰로비즈/고향사랑기부제 3개 서비스와 백오피스를 아우르는 모노레포 환경에서 B2C, B2B, 커머스 등 다양한 프론트엔드 개발을 담당했습니다.',
+    tech: [
+      'Next.js(v14~16, App Router)',
+      'Tanstack Router',
+      'TypeScript',
+      'TailwindCSS',
+      'Tanstack Query',
+      'Zustand',
+    ],
   },
   {
     company: '주식회사 비투지게임즈',
@@ -129,6 +138,7 @@ const EXPERIENCE: ExperienceItem[] = [
     period: '2023년 2월 - 2024년 6월',
     description:
       '판타지 스포츠 웹 게임 플랫폼을 운영하는 회사입니다. 카드 거래/랭킹/커뮤니티 등 게임 핵심 기능을 담당했습니다.',
+    tech: ['Nuxt.js', 'TypeScript', 'Pinia'],
   },
   {
     company: '빈페이지(주)',
@@ -136,6 +146,7 @@ const EXPERIENCE: ExperienceItem[] = [
     period: '2020년 10월 - 2022년 7월',
     description:
       '코딩 없이 홈페이지를 만드는 드래그앤드롭 웹 빌더 서비스를 운영하는 회사입니다. 외부 서비스 연동과 성능 개선 등 서비스 전반을 풀스택으로 담당했습니다.',
+    tech: ['Node.js', 'Express', 'jQuery', 'Ajax', 'MySQL', 'AWS EC2'],
   },
 ];
 
@@ -155,7 +166,6 @@ interface ProblemSolvingItem {
 
 interface ProjectGroup {
   company: string;
-  description: string;
   projects: ProjectItem[];
   problemSolving: ProblemSolvingItem[];
 }
@@ -163,8 +173,6 @@ interface ProjectGroup {
 const PROJECTS: ProjectGroup[] = [
   {
     company: '주식회사 웰로',
-    description:
-      '맞춤형 복지 혜택 추천, 고향사랑기부제, 기업 솔루션 등 공공/복지 도메인의 모노레포 환경 프론트엔드 개발. 3개 서비스(웰로, 웰로 비즈, 고향사랑기부제) + 백오피스 전반의 FE 개발',
     projects: [
       {
         title: '고향사랑기부제 커머스 서비스',
@@ -236,7 +244,8 @@ const PROJECTS: ProjectGroup[] = [
           '에러 발생 시 수동으로 Sentry 확인 → Jira 티켓 생성 → Slack 공유까지 5분 이상 소요. 에러를 놓치는 경우도 발생.',
         approach:
           'Sentry Webhook → AWS Lambda → Claude API로 에러 분석 → Jira 티켓 자동 생성 + Slack 알림 파이프라인 구축. 프로젝트별 Jira Epic 자동 라우팅, AI 기반 심각도/원인 자동 분류. 개인 비용으로 POC 진행 후 팀에 제안하여 도입.',
-        result: '에러 인지→티켓 생성: 수동 5분 → 자동 30초로 단축',
+        result:
+          '에러 인지→티켓 생성: 수동 5분 → 자동 30초로 단축. 월 약 $6 비용으로 운영하며, 사람이 반복하던 원인 분석·티켓 작성 리소스를 절감.',
         note: 'Sentry 기본 알림은 에러 발생 알림만 제공. 이 파이프라인은 에러 수집 이후의 팀 워크플로우 자동화(원인 분석 + 심각도 판단 + Jira Epic 라우팅)가 목적. Sentry MCP는 로컬 개인 분석 도구이고, 이 파이프라인은 팀 전체 자동화를 담당.',
       },
       {
@@ -325,8 +334,6 @@ const PROJECTS: ProjectGroup[] = [
   },
   {
     company: '주식회사 비투지게임즈',
-    description:
-      '판타지 스포츠 웹 게임 플랫폼의 프론트엔드 개발. 카드 거래, 랭킹, 커뮤니티 등 게임 핵심 기능 개발 및 배포 환경 관리.',
     projects: [
       {
         title: '판타지 스포츠 웹 게임 플랫폼',
@@ -363,8 +370,6 @@ const PROJECTS: ProjectGroup[] = [
   },
   {
     company: '빈페이지(주)',
-    description:
-      '드래그앤드롭 기반 홈페이지 제작 툴의 풀스택 개발. 외부 서비스 연동, 성능 개선, 기능 개발 등 서비스 전반 담당.',
     projects: [
       {
         title: '드래그앤드롭 웹 빌더 서비스',
@@ -551,6 +556,16 @@ const PortfolioPage = () => (
             <p className="mt-8 text-px-13 leading-px-20 text-gray-600">
               {experience.description}
             </p>
+            <ul className="mt-12 flex flex-wrap gap-px-6">
+              {experience.tech.map((tech) => (
+                <li
+                  key={tech}
+                  className="rounded-px-6 bg-gray-100 px-8 py-4 text-px-12 text-gray-600"
+                >
+                  {tech}
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>
@@ -565,9 +580,6 @@ const PortfolioPage = () => (
               <h3 className="text-px-18 font-700 text-gray-900">
                 {group.company}
               </h3>
-              <p className="mt-8 text-px-13 leading-px-20 text-gray-600">
-                {group.description}
-              </p>
             </div>
 
             {group.projects.length > 0 && (
