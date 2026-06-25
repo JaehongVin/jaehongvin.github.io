@@ -137,7 +137,10 @@ const Tbody = ({ children, ...props }: ComponentProps<'tbody'>) => (
 );
 
 const Tr = ({ children, ...props }: ComponentProps<'tr'>) => (
-  <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors" {...props}>
+  <tr
+    className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+    {...props}
+  >
     {children}
   </tr>
 );
