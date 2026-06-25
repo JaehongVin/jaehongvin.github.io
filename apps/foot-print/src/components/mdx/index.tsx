@@ -118,6 +118,45 @@ const Hr = ({ ...props }: ComponentProps<'hr'>) => (
   <hr className="my-32 border-gray-200" {...props} />
 );
 
+const Table = ({ children, ...props }: ComponentProps<'table'>) => (
+  <div className="my-24 overflow-x-auto rounded-px-8 border border-gray-200">
+    <table className="w-full text-px-14 border-collapse" {...props}>
+      {children}
+    </table>
+  </div>
+);
+
+const Thead = ({ children, ...props }: ComponentProps<'thead'>) => (
+  <thead className="bg-gray-100 border-b border-gray-200" {...props}>
+    {children}
+  </thead>
+);
+
+const Tbody = ({ children, ...props }: ComponentProps<'tbody'>) => (
+  <tbody {...props}>{children}</tbody>
+);
+
+const Tr = ({ children, ...props }: ComponentProps<'tr'>) => (
+  <tr className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors" {...props}>
+    {children}
+  </tr>
+);
+
+const Th = ({ children, ...props }: ComponentProps<'th'>) => (
+  <th
+    className="py-10 px-16 text-left text-px-13 font-600 text-gray-700"
+    {...props}
+  >
+    {children}
+  </th>
+);
+
+const Td = ({ children, ...props }: ComponentProps<'td'>) => (
+  <td className="py-10 px-16 text-px-14 text-gray-600 align-middle" {...props}>
+    {children}
+  </td>
+);
+
 export const mdxComponents = {
   h2: H2,
   h3: H3,
@@ -131,4 +170,10 @@ export const mdxComponents = {
   code: Code,
   pre: Pre,
   hr: Hr,
+  table: Table,
+  thead: Thead,
+  tbody: Tbody,
+  tr: Tr,
+  th: Th,
+  td: Td,
 };

@@ -2,6 +2,7 @@ import { Badge } from '@common/ui/atoms/Badge';
 import { Card, CardContent } from '@common/ui/molecules/Card';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import rehypeSlug from 'rehype-slug';
+import remarkGfm from 'remark-gfm';
 import { mdxComponents } from '@/components/mdx';
 import { SITE_URL } from '@/constants/seo';
 import type { Post } from '@/types/post';
@@ -69,6 +70,7 @@ export const ContentDetailPage = ({
               components={mdxComponents}
               options={{
                 mdxOptions: {
+                  remarkPlugins: [remarkGfm],
                   rehypePlugins: [rehypeSlug],
                 },
               }}
