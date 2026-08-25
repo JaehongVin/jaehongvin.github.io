@@ -1,0 +1,185 @@
+---
+title: "LLM 동작 원리, 프론트엔드 개발자의 시선으로"
+description: "토큰화부터 디코딩까지 LLM 내부 동작 6단계를, React의 렌더링 파이프라인과 상태 관리 개념에 빗대어 정리"
+date: "2026-08-25"
+category: "프론트엔드"
+tags: ["LLM", "AI"]
+---
+
+## 들어가며
+
+LLM이 질문을 받아 답을 생성하기까지 내부적으로 6단계를 거친다. 원래는 백엔드 개발자를 대상으로 설명된 개념이지만, 각 단계는 프론트엔드가 매일 다루는 파싱·상태 관리·렌더링 사이클과 구조적으로 닮아있다. 그 대응 관계를 따라가며 정리한다.
+
+---
+
+## 1. Tokenization → 소스코드를 토큰으로 쪼개는 파서
+
+문장을 의미 있는 최소 단위(토큰)로 쪼개고, 각 토큰에 고유 정수 ID를 부여하는 단계다.
+
+```text
+"LLM의 내부 동작 원리."
+        ↓ 토크나이저
+['LLM', '의', '내부', '동작', '원리', '.']
+        ↓ ID 매핑
+[73, 12, 36, 63, 96, 91]
+```
+
+Babel이나 JS 엔진이 소스코드를 그대로 실행하지 않고, 먼저 렉서(Lexer)로 토큰 스트림을 만든 뒤 AST를 구성하는 것과 같은 발상이다. 원문 텍스트를 곧바로 다루지 않고 "의미 단위 + ID"로 정규화해야 이후 단계가 일관되게 처리할 수 있다.
+
+```javascript
+// 렉서가 소스를 토큰으로 쪼개는 것과 동일한 구조
+const source = "const x = 1;";
+// → [{type:'keyword', value:'const'}, {type:'ident', value:'x'}, ...]
+```
+
+Gemini가 쓰는 SentencePiece는 단어를 더 작은 서브워드로 쪼갠다는 점에서, CSS-in-JS가 클래스를 원자 단위(atomic class)로 쪼개는 것과 비슷한 유연성을 준다. 처음 보는 단어도 이미 알고 있는 조각들의 조합으로 표현할 수 있기 때문이다.
+
+---
+
+## 2. Embedding → 의미를 담은 디자인 토큰
+
+토큰 ID(단순 정수)를 의미와 뉘앙스를 담은 고차원 벡터로 바꾸는 단계다.
+
+```text
+토큰 ID: 1423 ('Jeans')
+        ↓ Embedding Table 조회
+벡터: [-0.2416, -0.0663, 0.4457, ...]  (768차원)
+```
+
+디자인 토큰 시스템에서 `primary`라는 이름을 `#3B82F6`이라는 구체적인 값으로 치환하는 것과 같은 구조다. 차이가 있다면, 임베딩은 `primary-500`과 `primary-600`이 벡터 공간에서 가깝게 위치하듯 **의미가 비슷하면 좌표도 가깝다**는 성질을 보장한다는 점이다.
+
+```text
+'자동차'  ●
+              ＼
+               ● '탈 것'이라는 공통 의미로 서로 가까움
+              ／
+'오토바이' ●
+```
+
+즉 Embedding Table은 색상값 하나만 매핑하는 디자인 토큰이 아니라, "의미론적 거리"까지 인코딩된 토큰 시스템에 가깝다.
+
+---
+
+## 3. Positional Encoding → React의 `key` prop
+
+Attention은 단어 간 관계는 잘 계산하지만, 어떤 단어가 먼저 나왔는지 **순서 정보가 없다**는 한계가 있다. 이를 보완하기 위해 위치 정보를 담은 벡터를 만들어 임베딩 벡터에 더해준다.
+
+```text
+최종 입력 벡터 = Word Embedding + Positional Encoding
+```
+
+`.map()`으로 리스트를 렌더링할 때 `key` 없이는 React가 각 아이템의 정체성과 순서를 구분하지 못하는 상황과 정확히 같다.
+
+```jsx
+// key 없이 렌더링하면 React는 각 항목의 "위치"를 신뢰할 수 없다
+{items.map((item) => (
+  <Item key={item.id} {...item} /> // key = Positional Encoding
+))}
+```
+
+Positional Encoding은 벡터에 "너는 3번째 자리다"라는 좌표값을 더해주는 것이고, `key`는 리스트 아이템에 "너는 이 자리의 이 항목이다"라는 정체성을 부여하는 것이다. 목적이 같다 — 순서·정체성이 유실되지 않도록 명시적으로 표시하는 것.
+
+---
+
+## 4. Transformer & Attention → Context API와 Selector 패턴
+
+Self-Attention은 "문장 속 모든 단어가 서로에게 얼마나 집중해야 하는지"를 계산한다.
+
+```text
+"그가 물을 마셨다"
+
+'그' ────attention────→ '마셨다'
+'그' ────attention────→ '물을'
+```
+
+전역 상태(Context)를 여러 컴포넌트가 구독하면서 "이 값이 바뀌면 나도 영향받는다"는 의존 관계를 계산하는 것과 같은 구조다.
+
+```jsx
+// 여러 selector가 같은 상태를 서로 다른 관점에서 구독 = Multi-Head Attention
+const name = useUserStore((state) => state.name);      // head 1
+const permission = useUserStore((state) => state.role); // head 2
+```
+
+Multi-Head Attention이 여러 헤드로 주어-동사, 명사-형용사 등 다양한 관계를 동시에 파악하듯, 여러 개의 selector 훅이 같은 전역 상태를 서로 다른 슬라이스로 동시에 구독하는 것과 대응된다.
+
+디코더의 **Masked Self-Attention**(아직 생성되지 않은 미래 토큰을 참조하지 못하게 막는 것)은, SSR에서 아직 렌더링되지 않은 미래 시점의 DOM을 하위 컴포넌트가 미리 참조할 수 없는 것과 비슷하다. 그리고 **Add & Norm**(잔차 연결 + 정규화)은 레이어를 거칠 때마다 원본 정보가 소실되지 않도록 이전 값을 더해주는 것으로, 마치 상태 업데이트 시 불변성을 지키며 이전 state를 스프레드하는 습관(`{ ...prevState, ...patch }`)과 같은 문제의식을 공유한다 — 이전 정보를 통째로 잃지 않는 것.
+
+---
+
+## 5. Prediction → 자동완성 드롭다운
+
+문맥 벡터로 다음 토큰의 확률 분포를 계산하고, 그중 하나를 선택하는 단계다.
+
+```text
+"오늘 날씨가 " 다음에 올 단어는?
+
+맑다   45%
+좋다   20%
+흐리다 15%
+덥다   10%
+...
+```
+
+검색창 자동완성에서 후보 리스트를 몇 개까지 보여줄지 정하는 로직과 구조가 같다.
+
+| LLM 개념 | FE 자동완성 대응 |
+|---|---|
+| Top-K Sampling | 후보를 상위 K개로 제한해서 노출 |
+| Top-P Sampling | 누적 확률(관련도) P%까지만 후보로 노출 |
+| Temperature | 후보 정렬에 랜덤성을 얼마나 섞을지 조절하는 다이얼 |
+
+Temperature가 높으면 1등이 아닌 후보도 곧잘 선택되어 다양하지만 엉뚱한 결과가 나올 수 있고, 낮으면 항상 가장 확실한 후보만 선택해 보수적이지만 단조로운 결과가 나온다. Greedy Search는 Temperature 없이 무조건 1등만 반환하는 자동완성, 즉 개인화나 다양성 없이 최다 검색어만 보여주는 것과 같다.
+
+---
+
+## 6. Loop & Decoding → React의 렌더링 사이클
+
+예측된 토큰을 입력 끝에 이어 붙이고, 다시 4~6단계를 반복하며 다음 토큰을 생성하는 단계다.
+
+```text
+Predict → Append → Loop
+  ↑                  │
+  └──────────────────┘
+(EOS 토큰 또는 최대 길이까지 반복)
+```
+
+`setState` → 리렌더 → 커밋 → 상태 변경 감지 → 다시 리렌더로 이어지는 React 렌더 루프와 구조가 같다.
+
+```jsx
+// 자동회귀(Autoregressive) = 이전 렌더 결과를 입력으로 다음 렌더를 만드는 것
+function generate(prevTokens) {
+  const nextToken = predict(prevTokens);   // Predict
+  const tokens = [...prevTokens, nextToken]; // Append (이전 state 기반으로 새 state)
+
+  if (nextToken === EOS) return tokens;    // 언마운트 조건
+  return generate(tokens);                 // Loop = 다음 렌더 트리거
+}
+```
+
+매 토큰 생성이 한 번의 렌더 사이클이고, 이전 렌더 결과(생성된 단어들)를 입력으로 반영해 다음 렌더를 만든다는 점이 핵심 유사점이다. EOS 토큰은 조건부 렌더로 루프를 멈추는 것에 해당한다.
+
+마지막 Decoding은 정수 ID 배열을 사람이 읽는 텍스트로 되돌리는 과정으로, 내부 상태(state)를 최종 UI 문자열로 렌더링하는 것과 같다.
+
+---
+
+## 정리
+
+| LLM 단계 | FE 대응 개념 |
+|---|---|
+| Tokenization | Lexer/Parser의 토큰화 |
+| Embedding | 의미론적 디자인 토큰 시스템 |
+| Positional Encoding | React 리스트의 `key` prop |
+| Attention | Context API + Selector 구독 |
+| Add & Norm | 불변성 유지한 상태 병합 (`{ ...prev, ...patch }`) |
+| Prediction (Top-K/Top-P/Temperature) | 자동완성 후보 필터링 로직 |
+| Loop (Autoregressive) | `setState` 기반 렌더링 사이클 |
+| Decoding | state → UI 텍스트 렌더링 |
+
+결국 LLM의 6단계는 "파싱 → 상태화 → 순서 보존 → 관계 계산 → 다음 값 결정 → 루프"로, 프론트엔드가 매일 다루는 렌더링 파이프라인을 다른 언어로 옮겨놓은 것에 가깝다.
+
+---
+
+## 참고
+
+- 원문: [LLM은 어떻게 동작하는가](https://tech.kakaopay.com/post/how-llm-works/) (카카오페이 기술 블로그)
+- 위 원문에서 설명하는 LLM 내부 동작 6단계를, 프론트엔드 개발자에게 익숙한 개념(React, Context API, 렌더링 사이클 등)에 빗대어 재구성한 노트다.
