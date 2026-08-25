@@ -1,0 +1,243 @@
+---
+title: "트리 (Tree · BST)"
+description: "트리와 이진 탐색 트리의 동작 원리, 순회 방식, 시간 복잡도와 FE에서의 활용"
+date: "2026-08-25"
+category: "CS"
+tags: ["자료구조", "JavaScript"]
+---
+
+## 트리 (Tree)
+
+트리는 **하나의 루트(root)에서 시작해 자식 노드로 뻗어나가는 계층 구조**의 자료구조다. 배열·연결리스트가 선형이라면, 트리는 비선형이다.
+
+```text
+          A (root)
+        /   \
+       B     C
+      / \     \
+     D   E     F   ← leaf (자식 없는 노드)
+```
+
+### 용어
+
+| 용어 | 의미 |
+|------|------|
+| 루트 (root) | 부모가 없는 최상위 노드 |
+| 리프 (leaf) | 자식이 없는 노드 |
+| 부모 / 자식 | 직접 연결된 상위 / 하위 노드 |
+| 깊이 (depth) | 루트에서 특정 노드까지의 거리 |
+| 높이 (height) | 가장 깊은 리프까지의 거리 |
+| 서브트리 (subtree) | 특정 노드를 루트로 하는 하위 트리 |
+
+트리는 **재귀적 구조**다. 모든 서브트리도 트리이기 때문에, 트리를 다루는 로직은 대부분 재귀로 짠다.
+
+---
+
+## 이진트리 (Binary Tree)
+
+각 노드가 **자식을 최대 2개(왼쪽·오른쪽)만** 가지는 트리다.
+
+```javascript
+class TreeNode {
+  constructor(value) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+  }
+}
+
+const root = new TreeNode('A');
+root.left = new TreeNode('B');
+root.right = new TreeNode('C');
+```
+
+JS에는 트리 내장 타입이 없어서 객체(노드)와 참조로 직접 구성한다.
+
+### 순회 (Traversal)
+
+트리를 방문하는 순서에 따라 세 가지로 나뉜다. 모두 **재귀**로 구현하는 게 자연스럽다.
+
+```text
+        A
+       / \
+      B   C
+     / \
+    D   E
+```
+
+**전위 순회 (Preorder)**: root → left → right → `A, B, D, E, C`
+
+```javascript
+const preorder = (node, result = []) => {
+  if (!node) return result;
+  result.push(node.value);
+  preorder(node.left, result);
+  preorder(node.right, result);
+  return result;
+};
+```
+
+**중위 순회 (Inorder)**: left → root → right → `D, B, E, A, C`
+
+**후위 순회 (Postorder)**: left → right → root → `D, E, B, C, A`
+
+| 순회 | 순서 | 쓰임 |
+|------|------|------|
+| 전위 | root → left → right | 트리 복사, 구조 출력 |
+| 중위 | left → root → right | BST에서 정렬된 순서로 값 추출 |
+| 후위 | left → right → root | 하위 노드부터 처리해야 할 때 (트리 삭제, 크기 계산) |
+
+레벨 순서로 방문하는 **레벨 순회(BFS)도** 있다. 재귀가 아니라 큐를 써서 구현한다.
+
+```javascript
+const levelOrder = (root) => {
+  if (!root) return [];
+  const result = [];
+  const queue = [root];
+
+  while (queue.length > 0) {
+    const node = queue.shift(); // 실제로는 인덱스 포인터로 O(1) 구현 권장
+    result.push(node.value);
+    if (node.left) queue.push(node.left);
+    if (node.right) queue.push(node.right);
+  }
+  return result;
+};
+// [A, B, C, D, E]
+```
+
+---
+
+## 이진 탐색 트리 (BST)
+
+**왼쪽 서브트리는 모두 현재 노드보다 작고, 오른쪽 서브트리는 모두 크다**는 규칙을 가진 이진트리다.
+
+```text
+          8
+        /   \
+       3     10
+      / \      \
+     1   6      14
+        / \     /
+       4   7   13
+```
+
+이 규칙 덕분에 값을 찾을 때마다 절반의 서브트리를 통째로 배제할 수 있다. 이진 탐색과 원리가 같다.
+
+### 탐색 / 삽입
+
+```javascript
+const insert = (node, value) => {
+  if (!node) return new TreeNode(value);
+
+  if (value < node.value) {
+    node.left = insert(node.left, value);
+  } else if (value > node.value) {
+    node.right = insert(node.right, value);
+  }
+  return node;
+};
+
+const search = (node, value) => {
+  if (!node) return false;
+  if (node.value === value) return true;
+
+  return value < node.value
+    ? search(node.left, value)
+    : search(node.right, value);
+};
+```
+
+### 시간 복잡도
+
+| 연산 | 평균 | 최악 | 이유 |
+|------|------|------|------|
+| 탐색 | O(log n) | O(n) | 균형 잡히면 절반씩 배제 / 편향되면 연결리스트와 동일 |
+| 삽입 | O(log n) | O(n) | 탐색과 동일한 경로 이동 |
+| 삭제 | O(log n) | O(n) | 탐색 후 노드 재배치 필요 |
+
+**최악의 경우**는 값이 정렬된 순서로 들어와 트리가 한쪽으로만 뻗는 경우다.
+
+```text
+1
+ \
+  2
+   \
+    3
+     \
+      4   ← 사실상 연결리스트, 모든 연산 O(n)
+```
+
+이 문제를 해결하려고 스스로 균형을 맞추는 **AVL 트리**, **레드-블랙 트리** 같은 자가 균형 트리가 나왔다. 최악의 경우에도 O(log n)을 보장한다.
+
+### 중위 순회 = 정렬된 값 추출
+
+BST를 중위 순회하면 항상 오름차순으로 값이 나온다.
+
+```javascript
+inorder(root); // [1, 3, 4, 6, 7, 8, 10, 13, 14]
+```
+
+왼쪽(작은 값) → 자기 자신 → 오른쪽(큰 값) 순서로 방문하기 때문이다. BST 정렬의 핵심 원리다.
+
+---
+
+## FE에서의 트리
+
+**DOM 트리**
+
+브라우저가 HTML을 파싱해 만드는 구조 자체가 트리다. `document.body`부터 시작해 자식 요소로 뻗어나간다.
+
+```javascript
+const walk = (node) => {
+  console.log(node.nodeName); // 전위 순회와 동일한 방문 순서
+  node.childNodes.forEach(walk);
+};
+walk(document.body);
+```
+
+**React 컴포넌트 트리 / Fiber 트리**
+
+JSX로 작성한 컴포넌트 구조도 트리다. React는 내부적으로 Fiber 트리를 순회하며 변경사항을 계산(reconciliation)한다.
+
+```jsx
+// 컴포넌트 트리도 결국 재귀 순회로 렌더링된다
+const renderTree = (node) => (
+  <li>
+    {node.name}
+    {node.children && (
+      <ul>{node.children.map((child) => renderTree(child))}</ul>
+    )}
+  </li>
+);
+```
+
+**중첩 JSON 렌더링 (댓글, 카테고리, 파일 트리 등)**
+
+계층형 데이터(대댓글, 카테고리 트리, 폴더 구조)를 UI로 그릴 때도 재귀 컴포넌트 패턴을 그대로 쓴다.
+
+```jsx
+const CommentItem = ({ comment }) => (
+  <li>
+    {comment.text}
+    {comment.replies.length > 0 && (
+      <ul>
+        {comment.replies.map((reply) => (
+          <CommentItem key={reply.id} comment={reply} />
+        ))}
+      </ul>
+    )}
+  </li>
+);
+```
+
+---
+
+## 정리
+
+- 트리는 루트에서 시작하는 계층형 비선형 구조이며, 재귀적으로 다루는 게 자연스럽다
+- 순회는 전위·중위·후위(재귀) / 레벨 순회(큐, BFS) 네 가지가 대표적
+- BST는 왼쪽 < 부모 < 오른쪽 규칙으로 평균 O(log n) 탐색·삽입·삭제, 편향되면 최악 O(n)
+- 중위 순회하면 BST 값이 오름차순으로 나온다
+- 최악의 경우를 막기 위해 AVL·레드-블랙 트리 같은 자가 균형 트리가 존재한다
+- FE에서는 DOM 트리, React Fiber 트리, 중첩 JSON(댓글·카테고리) 렌더링에 트리 순회 개념이 그대로 쓰인다
