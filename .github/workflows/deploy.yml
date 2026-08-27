@@ -29,11 +29,34 @@ concurrency:
 
 jobs:
   # ════════════════════════════════════════════
+  # 코드 품질 검사 - 타입 체크 + 린트
+  # 빌드 전에 실행되어 타입 오류·린트 위반을 먼저 차단한다
+  # (pre-commit 훅은 staged 파일만 검사하므로 전체 검증은 여기서 수행)
+  # ════════════════════════════════════════════
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      # 모든 워크스페이스의 typecheck + lint 실행 (turbo 캐시 활용)
+      - run: pnpm compile
+
+  # ════════════════════════════════════════════
   # CI (Continuous Integration) - 빌드 단계
   # 코드를 체크아웃하고, 의존성을 설치하고, 빌드하여
   # 배포 가능한 정적 파일(아티팩트)을 생성하는 단계
   # ════════════════════════════════════════════
   build:
+    needs: quality # 품질 검사 통과 후 실행
     runs-on: ubuntu-latest
     steps:
       # 레포지토리 코드를 CI 러너에 체크아웃

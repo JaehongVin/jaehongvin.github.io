@@ -1,0 +1,17 @@
+{
+  //* 이 프로젝트에서 권장하는 확장
+  "recommendations": [
+    //* Biome - 린트/포맷 (저장 시 자동 수정에 필수)
+    "biomejs.biome",
+    //* Tailwind CSS IntelliSense - cva/cn 안의 클래스 자동완성
+    "bradlc.vscode-tailwindcss",
+    //* PostCSS - Tailwind v4의 @theme, @utility 등 커스텀 문법 지원
+    "csstools.postcss",
+    //* Better Comments - 프로젝트 주석 컨벤션(//*) 하이라이트
+    "aaron-bond.better-comments",
+    //* Code Spell Checker - settings.json의 cSpell.words 설정과 연동
+    "streetsidesoftware.code-spell-checker"
+  ],
+  //* 충돌하는 확장 (Biome이 린트/포맷을 모두 담당)
+  "unwantedRecommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+}

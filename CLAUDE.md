@@ -65,24 +65,31 @@ pnpm dev:foot-print
 # 빌드
 pnpm build:foot-print
 
-# 린트
-pnpm lint:foot-print
+# 포맷 + 자동 수정 (biome check --write)
+pnpm format
 
-# 포맷 (수정까지 적용)
-pnpm format:foot-print
-
-# 타입 체크
-pnpm typecheck:foot-print
+# 린트 / 타입 체크
+pnpm lint
+pnpm typecheck
 
 # 타입 체크 + 린트 (작업 완료 후 검증용)
-pnpm compile:foot-print
-pnpm compile:common-ui
+pnpm compile
 
 # 전체 정리 (node_modules, .next, .turbo 삭제)
 pnpm clean
 ```
 
-> 커밋 시 husky pre-commit이 `biome check --staged`를 실행한다.
+> 패키지 단위로 돌리려면 접미사를 붙인다: `pnpm compile:foot-print`, `pnpm compile:common-ui`
+
+### 코드 품질 3층 구조
+
+| 층 | 시점 | 동작 |
+|----|------|------|
+| 에디터 | 저장 시 | Biome 확장이 포맷 + safe fix 자동 적용 (`.vscode/settings.json`) |
+| pre-commit | 커밋 시 | `lint-staged`가 staged 파일만 `biome check --write` 후 재스테이징. 자동 수정 불가한 오류만 커밋 차단 |
+| CI | push 시 | `pnpm compile`(전체 typecheck + lint)이 통과해야 빌드·배포 진행 |
+
+> 작업을 마치면 `pnpm compile`로 검증한다. 저장 시 자동 수정은 포맷 계열만 커버하고, `noExplicitAny`·a11y·타입 오류는 잡지 못한다.
 
 ## 코드 컨벤션
 
