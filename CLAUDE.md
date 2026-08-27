@@ -150,11 +150,11 @@ pnpm clean
 
 | 훅 | 시점 | 동작 |
 |----|------|------|
-| `guard-dangerous-command.mjs` | Bash 실행 전 | force push, `--no-verify`, `reset --hard`, `clean -f`, `rm -rf`에 사용자 확인 요구 |
+| `guard-dangerous-command.mjs` | Bash 실행 전 | force push, `--no-verify`, `reset --hard`, `clean -f`, `rm -rf` 차단 |
 | `format-on-edit.mjs` | Write/Edit 직후 | 편집 파일에 Biome 적용 |
 | `review-on-stop.mjs` | 작업 종료 시 | 변경 확장자에 따라 검증 에이전트 실행 |
 
-> 평범한 `git commit`·`git push`는 막지 않는다. 사용자가 직접 지시하는 작업이라 막으면 매번 훅을 꺼야 한다. 파괴적·우회 변종만 확인을 요구한다.
+> 평범한 `git commit`·`git push`는 막지 않는다. 사용자가 직접 지시하는 작업이라 막으면 매번 훅을 꺼야 한다. 파괴적·우회 변종만 차단한다(deny). 의도한 작업이면 명령을 직접 수정해서 다시 실행해야 한다.
 
 ### 자동 검증 (Stop 훅)
 
