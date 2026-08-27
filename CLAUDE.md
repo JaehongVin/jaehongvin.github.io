@@ -123,3 +123,27 @@ pnpm clean
 | `nextjs-static-export` | `output: 'export'` 제약 (API Routes·ISR 불가 등) |
 | `nextjs-route-special-files` | error.tsx / not-found.tsx 컨벤션 |
 | `playwright-qa` | UI 변경 후 브라우저 QA 절차 |
+
+---
+
+## 서브에이전트
+
+`.claude/agents/`에 정의되어 있다. 각자 독립된 컨텍스트에서 돌고 결과만 메인 세션에 돌려주므로, 출력이 길거나 반복적인 작업을 맡긴다.
+
+| 에이전트 | 모델 | 역할 | 수정 권한 |
+|----------|------|------|-----------|
+| `code-reviewer` | opus | 변경분을 컨벤션·버그 관점에서 리뷰 | 없음 (리뷰만) |
+| `debugger` | opus | 빌드·타입·런타임 에러의 근본 원인 추적 | 없음 (분석만) |
+| `ui-qa` | sonnet | Playwright로 UI 변경 브라우저 검증 | 없음 (보고만) |
+| `mdx-writer` | sonnet | 포스트·노트 MDX 작성 및 교정 | content/ 쓰기 |
+| `test-writer` | sonnet | 유틸·컴포넌트 테스트 작성 | 테스트 파일 쓰기 |
+
+> 모델 기준: **판단이 필요하면 opus, 수집·변환이면 sonnet.** 리뷰와 디버깅은 놓친 문제 하나가 비용보다 비싸고, QA·문서·테스트는 출력량이 많은 대신 판단 폭이 좁다.
+
+### 자동 리뷰 (Stop 훅)
+
+작업이 끝날 때 `.claude/hooks/review-on-stop.mjs`가 `.ts`·`.tsx`·`.css` 변경을 감지하면 `code-reviewer`를 자동 실행한다.
+
+- 세션별 마커로 같은 변경 상태를 두 번 리뷰하지 않는다
+- 어떤 이유로든 훅이 실패하면 조용히 통과한다 (턴을 막지 않는다)
+- 끄려면 `.claude/settings.json`의 `hooks.Stop`을 제거한다

@@ -1,3 +1,17 @@
 {
-  "model": "opus"
+  "model": "opus",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/review-on-stop.mjs\"",
+            "timeout": 15,
+            "statusMessage": "변경 코드 확인 중"
+          }
+        ]
+      }
+    ]
+  }
 }
