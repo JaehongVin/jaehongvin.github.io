@@ -43,7 +43,7 @@ const NotesPage = async () => {
       </Suspense>
       <main className={cn('min-w-0 flex-1', 'dt:max-w-px-900')}>
         <Suspense fallback={null}>
-          <ContentFilter posts={notes} basePath="notes" />
+          <ContentFilter posts={notes} basePath="notes" listPath="notes" />
         </Suspense>
       </main>
     </div>
