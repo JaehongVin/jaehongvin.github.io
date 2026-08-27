@@ -81,13 +81,16 @@ pnpm clean
 
 > 패키지 단위로 돌리려면 접미사를 붙인다: `pnpm compile:foot-print`, `pnpm compile:common-ui`
 
-### 코드 품질 3층 구조
+### 코드 품질 4층 구조
 
 | 층 | 시점 | 동작 |
 |----|------|------|
-| 에디터 | 저장 시 | Biome 확장이 포맷 + safe fix 자동 적용 (`.vscode/settings.json`) |
+| 에디터 | 사람이 저장 시 | Biome 확장이 포맷 + safe fix 자동 적용 (`.vscode/settings.json`) |
+| Claude 편집 | Write/Edit 직후 | `format-on-edit.mjs`가 해당 파일에 `biome check --write`. 자동 수정 불가한 오류는 Claude에게 즉시 피드백 |
 | pre-commit | 커밋 시 | `lint-staged`가 staged 파일만 `biome check --write` 후 재스테이징. 자동 수정 불가한 오류만 커밋 차단 |
 | CI | push 시 | `pnpm compile`(전체 typecheck + lint)이 통과해야 빌드·배포 진행 |
+
+> Claude의 편집은 에디터를 거치지 않고 디스크에 직접 쓰이므로 `formatOnSave`가 발동하지 않는다. 2층이 그 구멍을 메운다.
 
 > 작업을 마치면 `pnpm compile`로 검증한다. 저장 시 자동 수정은 포맷 계열만 커버하고, `noExplicitAny`·a11y·타입 오류는 잡지 못한다.
 
@@ -140,6 +143,18 @@ pnpm clean
 > 모델 기준: **판단이 필요하면 opus, 수집·변환이면 sonnet.** 리뷰와 디버깅은 놓친 문제 하나가 비용보다 비싸고, QA·문서 작업은 출력량이 많은 대신 판단 폭이 좁다.
 
 메인 세션의 기본 모델은 `.claude/settings.json`의 `model`(현재 `sonnet`)이다. 에이전트는 각자 frontmatter에 모델을 명시하므로 기본값을 바꿔도 영향받지 않는다.
+
+### 훅 구성
+
+`.claude/hooks/`에 있고 `.claude/settings.json`에 등록되어 있다. 모두 Node 스크립트다.
+
+| 훅 | 시점 | 동작 |
+|----|------|------|
+| `guard-dangerous-command.mjs` | Bash 실행 전 | force push, `--no-verify`, `reset --hard`, `clean -f`, `rm -rf`에 사용자 확인 요구 |
+| `format-on-edit.mjs` | Write/Edit 직후 | 편집 파일에 Biome 적용 |
+| `review-on-stop.mjs` | 작업 종료 시 | 변경 확장자에 따라 검증 에이전트 실행 |
+
+> 평범한 `git commit`·`git push`는 막지 않는다. 사용자가 직접 지시하는 작업이라 막으면 매번 훅을 꺼야 한다. 파괴적·우회 변종만 확인을 요구한다.
 
 ### 자동 검증 (Stop 훅)
 
