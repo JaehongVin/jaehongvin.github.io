@@ -37,9 +37,5 @@ yarn-error.log*
 .DS_Store
 *.pem
 
-# AI
-.claude/
-CLAUDE.md
-
 # Personal resume docs (not for repo)
 /reference-resumes.md
