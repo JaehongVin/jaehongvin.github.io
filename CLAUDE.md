@@ -136,14 +136,21 @@ pnpm clean
 | `debugger` | opus | 빌드·타입·런타임 에러의 근본 원인 추적 | 없음 (분석만) |
 | `ui-qa` | sonnet | Playwright로 UI 변경 브라우저 검증 | 없음 (보고만) |
 | `mdx-writer` | sonnet | 포스트·노트 MDX 작성 및 교정 | content/ 쓰기 |
-| `test-writer` | sonnet | 유틸·컴포넌트 테스트 작성 | 테스트 파일 쓰기 |
 
-> 모델 기준: **판단이 필요하면 opus, 수집·변환이면 sonnet.** 리뷰와 디버깅은 놓친 문제 하나가 비용보다 비싸고, QA·문서·테스트는 출력량이 많은 대신 판단 폭이 좁다.
+> 모델 기준: **판단이 필요하면 opus, 수집·변환이면 sonnet.** 리뷰와 디버깅은 놓친 문제 하나가 비용보다 비싸고, QA·문서 작업은 출력량이 많은 대신 판단 폭이 좁다.
 
-### 자동 리뷰 (Stop 훅)
+메인 세션의 기본 모델은 `.claude/settings.json`의 `model`(현재 `sonnet`)이다. 에이전트는 각자 frontmatter에 모델을 명시하므로 기본값을 바꿔도 영향받지 않는다.
 
-작업이 끝날 때 `.claude/hooks/review-on-stop.mjs`가 `.ts`·`.tsx`·`.css` 변경을 감지하면 `code-reviewer`를 자동 실행한다.
+### 자동 검증 (Stop 훅)
 
-- 세션별 마커로 같은 변경 상태를 두 번 리뷰하지 않는다
+작업이 끝날 때 `.claude/hooks/review-on-stop.mjs`가 변경된 확장자를 보고 검증 에이전트를 실행한다.
+
+| 변경 확장자 | 실행되는 에이전트 |
+|-------------|-------------------|
+| `.ts` | `code-reviewer` |
+| `.tsx` · `.css` | `code-reviewer` + `ui-qa` (병렬) |
+
+- 세션별 마커로 같은 변경 상태를 두 번 검증하지 않는다
 - 어떤 이유로든 훅이 실패하면 조용히 통과한다 (턴을 막지 않는다)
+- `ui-qa`는 dev 서버가 떠 있어야 동작한다. 안 떠 있으면 스크린샷 없이 즉시 종료하고 보고만 한다
 - 끄려면 `.claude/settings.json`의 `hooks.Stop`을 제거한다
