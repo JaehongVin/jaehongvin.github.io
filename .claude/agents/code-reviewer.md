@@ -19,7 +19,7 @@ model: opus
    - `content/**/*.mdx` → `mdx-content-authoring`
    - `error.tsx` / `not-found.tsx` → `nextjs-route-special-files`
    - 데이터 페칭 · 라우팅 → `nextjs-static-export`
-3. 필요하면 `pnpm compile` 로 타입·린트 상태를 확인한다.
+3. `.ts`/`.tsx` 변경이 있으면 `pnpm compile` 로 타입·린트 상태를 반드시 확인한다. 코드만 읽어서는 다른 파일과의 상호작용에서 나는 타입 오류를 놓친다. `.css`만 바뀐 경우는 생략해도 된다.
 
 ## 판단 기준 (심각도 순)
 

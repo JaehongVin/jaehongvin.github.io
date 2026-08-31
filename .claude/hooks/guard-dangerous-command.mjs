@@ -1,32 +1,78 @@
 #!/usr/bin/env node
 //* PreToolUse(Bash) 훅: 되돌리기 어렵거나 품질 게이트를 우회하는 명령을 차단한다.
-//* deny 이므로 승인 없이 바로 막힌다. 의도한 작업이면 명령을 직접 수정해서 재시도해야 한다. (보편적 방식 확인 후 수정)
+//* deny 이므로 승인 없이 바로 막힌다. 의도한 작업이면 명령을 직접 수정해서 재시도해야 한다.
 //* 평범한 git commit·push 는 막지 않는다. 그건 사용자가 직접 지시하는 작업이다.
+//*
+//* 플래그는 결합형(-rf)·분리형(-r -f)·긴 형식(--force) 어느 쪽으로 와도 잡히도록
+//* 정규식 대신 토큰 단위로 쪼개서 검사한다.
 
 import { readFileSync } from 'node:fs';
 
+const tokenize = (command) => command.split(/\s+/).filter(Boolean);
+
+const isShortFlagCluster = (token) => /^-[a-zA-Z]+$/.test(token);
+const shortFlagHas = (tokens, char) =>
+  tokens.some(
+    (token) => isShortFlagCluster(token) && token.slice(1).includes(char),
+  );
+
+//* "git <subcommand>" 바로 뒤에 오는 인자들만 뽑아낸다. 못 찾으면 null
+const gitSubcommandArgs = (tokens, subcommand) => {
+  const idx = tokens.findIndex(
+    (token, i) => token === 'git' && tokens[i + 1] === subcommand,
+  );
+  return idx === -1 ? null : tokens.slice(idx + 2);
+};
+
 const RULES = [
   {
-    pattern: /\bgit\s+push\b(?=.*(--force\b|--force-with-lease\b|\s-f\b))/,
     reason:
       'force push는 원격 히스토리를 덮어쓴다. main은 곧바로 GitHub Pages에 배포된다',
+    test: (tokens) => {
+      const args = gitSubcommandArgs(tokens, 'push');
+      if (!args) return false;
+      return (
+        args.includes('--force') ||
+        args.includes('--force-with-lease') ||
+        shortFlagHas(args, 'f') ||
+        args.some((token) => token.startsWith('+') && token.length > 1) //* +refspec 형태의 강제 push
+      );
+    },
   },
   {
-    pattern: /\bgit\s+commit\b(?=.*(--no-verify\b|\s-n\b))/,
     reason: 'pre-commit 검사(lint-staged)를 우회한다',
+    test: (tokens) => {
+      const args = gitSubcommandArgs(tokens, 'commit');
+      if (!args) return false;
+      return args.includes('--no-verify') || shortFlagHas(args, 'n');
+    },
   },
   {
-    pattern: /\bgit\s+reset\b(?=.*--hard\b)/,
     reason: '커밋되지 않은 작업이 사라진다',
+    test: (tokens) =>
+      gitSubcommandArgs(tokens, 'reset')?.includes('--hard') ?? false,
   },
   {
-    pattern: /\bgit\s+clean\b(?=.*\s-[a-zA-Z]*f)/,
     reason: '추적되지 않는 파일을 삭제한다. 되돌릴 수 없다',
+    test: (tokens) => {
+      const args = gitSubcommandArgs(tokens, 'clean');
+      if (!args) return false;
+      return args.includes('--force') || shortFlagHas(args, 'f');
+    },
   },
   {
-    pattern:
-      /\brm\s+(-[a-zA-Z]*\s+)*-[a-zA-Z]*r[a-zA-Z]*f|\brm\s+(-[a-zA-Z]*\s+)*-[a-zA-Z]*f[a-zA-Z]*r/,
     reason: '재귀 강제 삭제다',
+    test: (tokens) => {
+      const idx = tokens.indexOf('rm');
+      if (idx === -1) return false;
+      const args = tokens.slice(idx + 1);
+      const recursive =
+        args.includes('--recursive') ||
+        shortFlagHas(args, 'r') ||
+        shortFlagHas(args, 'R');
+      const force = args.includes('--force') || shortFlagHas(args, 'f');
+      return recursive && force;
+    },
   },
 ];
 
@@ -35,7 +81,8 @@ const main = () => {
   const command = input.tool_input?.command;
   if (!command) return;
 
-  const hit = RULES.find((rule) => rule.pattern.test(command));
+  const tokens = tokenize(command);
+  const hit = RULES.find((rule) => rule.test(tokens));
   if (!hit) return;
 
   process.stdout.write(
