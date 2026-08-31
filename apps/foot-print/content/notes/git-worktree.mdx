@@ -1,0 +1,160 @@
+---
+title: "Git Worktree, 브랜치 전환 없이 병렬로 작업하기"
+description: "checkout 방식과의 차이부터 기본 명령어, PR 리뷰·AI 에이전트 병렬 실행 같은 실전 활용법까지 정리"
+date: "2026-08-31"
+category: "DX"
+tags: ["Git", "DX"]
+---
+
+## 들어가며
+
+`git worktree`라는 명령어를 들어본 적 있는지. 사실 Git 2.5(2015년)에 도입된 꽤 오래된 기능인데, 그동안 크게 주목받지 못하다가 최근 Claude Code, Cursor 같은 AI 코딩 에이전트들이 적극적으로 활용하면서 다시 조명받고 있다. 여러 작업을 병렬로 처리하면서 변경사항을 서로 침범하지 않게 격리하기 위해서다. 이제 git worktree는 사람뿐 아니라 AI 에이전트에게도 빠질 수 없는 도구가 되어가고 있다.
+
+이 노트에서는 git worktree의 기본 개념과 실전 활용법을 정리한다.
+
+---
+
+## Git Worktree란
+
+### 기존 방식: `checkout`/`switch`로 브랜치 전환
+
+지금까지 브랜치를 바꾸는 방법은 하나였다. 같은 작업 디렉토리 안에서 `git checkout`이나 `git switch`로 브랜치를 갈아타는 것이다.
+
+```bash
+git switch feature-a   # 작업 디렉토리 파일들이 feature-a 상태로 바뀜
+git switch feature-b   # 같은 디렉토리, feature-b 상태로 다시 바뀜
+```
+
+문제는 이 방식이 "하나의 작업 디렉토리에 하나의 브랜치"만 허용한다는 점이다. `feature-a`에서 작업하던 파일이 커밋되지 않은 상태로 남아 있으면 `stash`부터 해야 하고, 전환 후에는 `node_modules` 재설치나 dev 서버 재시작이 필요해지는 경우도 흔하다. 두 브랜치를 동시에 열어두고 비교하는 것도 불가능하다.
+
+### Worktree: 브랜치마다 독립된 작업 디렉토리
+
+`git worktree`는 하나의 `.git` 저장소(커밋, 브랜치, 히스토리)를 공유하면서, 브랜치마다 별도의 작업 디렉토리를 여러 개 만들 수 있게 해준다.
+
+```text
+my-project/                (main worktree, main 브랜치)
+├── .git/
+├── src/
+└── ...
+
+my-project-feature-a/      (추가 worktree, feature-a 브랜치)
+├── src/
+└── ...
+
+my-project-hotfix/         (추가 worktree, hotfix 브랜치)
+├── src/
+└── ...
+```
+
+각 디렉토리는 파일 시스템상 완전히 독립된 폴더이고, 그 안에서 각자 다른 브랜치를 체크아웃한 상태를 유지한다. 하지만 커밋 객체, 브랜치 정보, 원격 설정은 전부 하나의 `.git`을 공유한다. `git clone`을 여러 번 받는 것과 결과적으로 비슷해 보이지만, 저장소를 통째로 복제하지 않으므로 디스크 용량과 초기화 시간이 훨씬 적게 든다.
+
+---
+
+## 왜 필요한가
+
+### 브랜치 전환 비용
+
+브랜치를 전환할 때마다 파일 상태가 바뀌면서 부수적으로 딸려오는 비용이 있다. 의존성 버전이 다르면 재설치가 필요하고, dev 서버는 재시작해야 하고, 에디터의 인덱싱도 다시 돈다. 작업 하나를 잠깐 멈추고 다른 작업을 확인하려는 것뿐인데 이 비용을 매번 치러야 한다.
+
+worktree는 브랜치마다 디렉토리가 분리되어 있으니 전환이라는 개념 자체가 없다. 그냥 다른 폴더로 이동하면 된다. dev 서버도 포트만 다르게 잡으면 여러 브랜치를 동시에 띄워둘 수 있다.
+
+### 변경사항 격리
+
+작업 중이던 코드를 커밋하지 않은 채로 다른 브랜치를 봐야 할 때 `stash`를 쓰는데, stash가 쌓이면 어떤 stash가 어떤 작업이었는지 헷갈리기 쉽다. worktree는 애초에 디렉토리가 분리되어 있어서 stash가 필요한 상황 자체가 줄어든다. 각 작업의 변경사항이 물리적으로 다른 폴더에 있으므로 서로 섞일 일이 없다.
+
+### AI 코딩 에이전트가 worktree를 쓰는 이유
+
+Claude Code나 Cursor 같은 에이전트에 동시에 여러 작업을 맡기면, 에이전트마다 같은 작업 디렉토리의 파일을 건드리게 된다. 한 에이전트가 파일을 고치는 도중 다른 에이전트가 같은 파일을 다른 브랜치 기준으로 고치면 충돌이 난다. 사람이 눈으로 상태를 확인하며 조율하는 게 아니라 여러 프로세스가 동시에 파일 시스템에 접근하는 구조이기 때문에, 브랜치 전환 방식으로는 병렬 실행 자체가 성립하지 않는다.
+
+worktree를 쓰면 에이전트별로 독립된 디렉토리를 하나씩 배정할 수 있다. 각 에이전트는 자기 worktree 안에서만 파일을 읽고 쓰므로 다른 작업과 물리적으로 격리된다. 작업이 끝나면 그 worktree에서 커밋하고, 필요하면 PR을 올리거나 머지한 뒤 worktree를 정리하면 된다.
+
+---
+
+## 기본 명령어
+
+### worktree 추가
+
+```bash
+# 기존 브랜치를 새 worktree로 체크아웃
+git worktree add ../my-project-feature-a feature-a
+
+# 새 브랜치를 만들면서 worktree 생성
+git worktree add ../my-project-hotfix -b hotfix/login-bug
+```
+
+경로는 현재 저장소 바깥(형제 디렉토리)에 두는 게 일반적이다. 저장소 안에 두면 `.gitignore` 처리를 신경 써야 한다.
+
+### worktree 목록 확인
+
+```bash
+git worktree list
+```
+
+```text
+/Users/me/my-project              abcd123 [main]
+/Users/me/my-project-feature-a    ef56789 [feature-a]
+/Users/me/my-project-hotfix       1a2b3c4 [hotfix/login-bug]
+```
+
+### worktree 제거
+
+```bash
+git worktree remove ../my-project-feature-a
+```
+
+작업이 끝난 worktree는 디렉토리를 그냥 삭제하는 게 아니라 이 명령으로 지워야 `.git` 내부의 메타데이터까지 함께 정리된다. 커밋되지 않은 변경사항이 남아 있으면 `--force`가 필요하다.
+
+### 메타데이터 정리
+
+```bash
+git worktree prune
+```
+
+디렉토리를 `rm -rf`로 직접 지웠거나 경로가 이동된 worktree가 있으면, Git 내부에는 여전히 그 worktree에 대한 참조가 남아 있다. `prune`은 실제로 존재하지 않는 worktree의 메타데이터를 정리해준다.
+
+---
+
+## 실전 활용 예시
+
+### PR 리뷰하면서 다른 기능 개발하기
+
+기능 개발 중에 리뷰 요청이 들어오면, 지금 작업 중인 파일을 커밋하지 않은 채로 브랜치를 전환하기가 애매하다. worktree를 쓰면 별도 디렉토리에 리뷰 대상 브랜치를 체크아웃해서 실제로 실행해보고, 원래 작업 디렉토리는 그대로 둔 채 리뷰만 마치고 돌아올 수 있다.
+
+```bash
+git worktree add ../review-pr-42 origin/feature-payment
+cd ../review-pr-42
+pnpm install
+pnpm dev
+```
+
+리뷰가 끝나면 `git worktree remove ../review-pr-42`로 정리하면 된다.
+
+### 여러 브랜치 동시 작업
+
+기능 개발 중 급한 hotfix 요청이 들어오는 경우가 종종 있다. stash로 현재 작업을 잠시 치워두고 브랜치를 옮긴 뒤, hotfix가 끝나면 다시 stash를 꺼내는 흐름 대신, hotfix 전용 worktree를 하나 파서 그 안에서 바로 수정하고 커밋하면 원래 작업 디렉토리는 전혀 건드릴 필요가 없다.
+
+### AI 에이전트에게 여러 작업을 병렬로 맡기기
+
+이슈가 여러 개 쌓여 있을 때 각 이슈마다 worktree를 하나씩 만들고, 각 worktree에서 에이전트 세션을 따로 띄우면 작업이 서로 섞이지 않는다.
+
+```bash
+git worktree add ../work-issue-101 -b fix/issue-101
+git worktree add ../work-issue-102 -b fix/issue-102
+```
+
+두 세션이 동시에 돌아도 각자 자기 디렉토리 안에서만 파일을 수정하므로, 한쪽 세션이 만든 변경사항이 다른 쪽 diff에 섞여 들어오는 일이 없다. 작업이 끝난 순서대로 각 브랜치를 리뷰하고 머지하면 된다.
+
+---
+
+## 주의사항
+
+- **같은 브랜치를 두 worktree에서 동시에 체크아웃할 수 없다.** 이미 다른 worktree에서 체크아웃 중인 브랜치를 또 체크아웃하려 하면 `fatal: '...' is already checked out` 에러가 난다.
+- **의존성은 worktree마다 따로 설치해야 한다.** `node_modules`는 공유되지 않으므로 worktree 수만큼 디스크 용량이 늘어난다. worktree를 많이 만들었다 지웠다 하는 작업 방식이라면 이 부분을 감안해야 한다.
+- **디렉토리를 직접 삭제하면 메타데이터가 남는다.** `rm -rf`로 worktree 폴더를 지운 뒤에는 `git worktree prune`을 한 번 실행해서 정리하는 게 좋다.
+- **main worktree(원본 저장소)는 함부로 옮기거나 지우면 안 된다.** 다른 모든 worktree가 이 저장소의 `.git`을 참조하고 있어서, 원본이 사라지면 나머지 worktree도 정상 동작하지 않는다.
+
+---
+
+## 참고
+
+- [Git 공식 문서 — git-worktree](https://git-scm.com/docs/git-worktree)
