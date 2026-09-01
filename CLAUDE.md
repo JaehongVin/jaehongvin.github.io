@@ -133,16 +133,27 @@ pnpm clean
 
 `.claude/agents/`에 정의되어 있다. 각자 독립된 컨텍스트에서 돌고 결과만 메인 세션에 돌려주므로, 출력이 길거나 반복적인 작업을 맡긴다.
 
+### 메인 에이전트의 역할
+
+메인 세션(너)은 라우터다. 작업을 분해해서 적절한 서브에이전트에게 위임하고, 결과를 검증·종합해 사용자에게 보고하는 역할만 한다. 코드나 콘텐츠를 직접 Write·Edit하지 않는다.
+
+- 코드 작성·수정 → `code-writer`
+- 포스트·노트 작성·교정 → `mdx-writer`
+- 위 결과물 검증 → `code-reviewer` (+ `.tsx`/`.css` 변경이 있으면 `ui-qa`)
+
+이 경계는 툴 권한으로 강제되지 않는다 — 메인 세션은 기술적으로 모든 툴에 접근 가능하다. `review-on-stop.mjs`가 검증되지 않은 변경을 감지하면 턴 종료를 막고 위 위임 절차를 다시 지시하는 방식으로 보완한다.
+
 | 에이전트 | 모델 | 역할 | 수정 권한 |
 |----------|------|------|-----------|
+| `code-writer` | sonnet | 기능 구현·버그 수정 등 코드 작성 | apps/, packages/ 쓰기 (content/ 제외) |
 | `code-reviewer` | opus | 변경분을 컨벤션·버그 관점에서 리뷰 | 없음 (리뷰만) |
 | `debugger` | opus | 빌드·타입·런타임 에러의 근본 원인 추적 | 없음 (분석만) |
 | `ui-qa` | sonnet | Playwright로 UI 변경 브라우저 검증 | 없음 (보고만) |
 | `mdx-writer` | sonnet | 포스트·노트 MDX 작성 및 교정 | content/ 쓰기 |
 
-> 모델 기준: **판단이 필요하면 opus, 수집·변환이면 sonnet.** 리뷰와 디버깅은 놓친 문제 하나가 비용보다 비싸고, QA·문서 작업은 출력량이 많은 대신 판단 폭이 좁다.
+> 모델 기준: **판단이 필요하면 opus, 수집·변환이면 sonnet.** 리뷰와 디버깅은 놓친 문제 하나가 비용보다 비싸다. 구현(`code-writer`)·QA·문서 작업은 이미 정해진 사양을 코드·보고·글로 옮기는 변환에 가까워 sonnet으로 충분하다. 메인 세션은 여러 서브에이전트 중 무엇에 위임할지, 검증 결과를 어떻게 처리할지 매번 판단해야 하는 라우터라 opus를 쓴다.
 
-메인 세션의 기본 모델은 `.claude/settings.json`의 `model`(현재 `sonnet`)이다. 에이전트는 각자 frontmatter에 모델을 명시하므로 기본값을 바꿔도 영향받지 않는다.
+메인 세션의 기본 모델은 `.claude/settings.json`의 `model`(현재 `opus`)이다. 에이전트는 각자 frontmatter에 모델을 명시하므로 기본값을 바꿔도 영향받지 않는다.
 
 ### 훅 구성
 
@@ -152,20 +163,24 @@ pnpm clean
 |----|------|------|
 | `guard-dangerous-command.mjs` | Bash 실행 전 | force push, `--no-verify`, `reset --hard`, `clean -f`, `rm -rf` 차단 |
 | `format-on-edit.mjs` | Write/Edit 직후 | 편집 파일에 Biome 적용 |
-| `review-on-stop.mjs` | 작업 종료 시 | 변경 확장자에 따라 검증 에이전트 실행 |
+| `review-on-stop.mjs` | 작업 종료 시 | 변경 대상에 따라 검증 에이전트 실행, critical 발견 시 위임·재검증 루프 |
 
 > 평범한 `git commit`·`git push`는 막지 않는다. 사용자가 직접 지시하는 작업이라 막으면 매번 훅을 꺼야 한다. 파괴적·우회 변종만 차단한다(deny). 의도한 작업이면 명령을 직접 수정해서 다시 실행해야 한다.
 
 ### 자동 검증 (Stop 훅)
 
-작업이 끝날 때 `.claude/hooks/review-on-stop.mjs`가 변경된 확장자를 보고 검증 에이전트를 실행한다.
+작업이 끝날 때 `.claude/hooks/review-on-stop.mjs`가 변경된 파일을 보고 검증 에이전트를 실행한다.
 
-| 변경 확장자 | 실행되는 에이전트 |
+| 변경 대상 | 실행되는 에이전트 |
 |-------------|-------------------|
 | `.ts` | `code-reviewer` |
 | `.tsx` · `.css` | `code-reviewer` + `ui-qa` (병렬) |
+| `content/posts`, `content/notes`의 `.mdx` | `code-reviewer` (컨벤션 검증) |
 
-- 세션별 마커로 같은 변경 상태를 두 번 검증하지 않는다
+- diff 지문이 안 바뀌었으면 재검증하지 않는다. critical을 고치느라 파일이 다시 바뀌면 최대 3회까지 자동으로 재검증한다 (`MAX_ROUNDS`)
+- critical 발견 시 메인 에이전트는 직접 고치지 않고 `code-writer`(코드) / `mdx-writer`(콘텐츠)에게 수정을 위임한 뒤 재검증받는다
+- 마지막 라운드(3회차)에 코드 문제가 남아 있으면 `code-writer`를 다시 부르는 대신 `debugger`로 원인을 먼저 특정하게 하고, 그래도 critical이 남으면 더 반복하지 않고 사용자에게 보고하고 종료하도록 지시한다
+- 15분 넘게 새 변경이 없다가 다시 시작되면 별개의 새 작업으로 보고 라운드를 리셋한다 (예전 라운드가 누적돼 무관한 새 작업까지 상한에 걸리는 것을 방지)
 - 어떤 이유로든 훅이 실패하면 조용히 통과한다 (턴을 막지 않는다)
 - `ui-qa`는 dev 서버가 떠 있어야 동작한다. 안 떠 있으면 스크린샷 없이 즉시 종료하고 보고만 한다
 - 끄려면 `.claude/settings.json`의 `hooks.Stop`을 제거한다
