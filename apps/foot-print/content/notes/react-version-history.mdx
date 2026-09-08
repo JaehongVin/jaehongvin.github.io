@@ -1,0 +1,246 @@
+---
+title: "React 16에서 19.2까지, 버전별로 뭐가 달라졌나"
+description: "재조정 엔진 재작성부터 Actions, Server Components, Activity까지 메이저 버전별 브레이킹 체인지와 신규 기능 정리"
+date: "2026-09-08"
+category: "프론트엔드"
+tags: ["React"]
+---
+
+## 들어가며
+
+React 프로젝트를 오래 유지보수하다 보면 "이 API는 언제 생겼지", "이거 언제부터 안 되는 거지" 싶은 순간이 자주 온다. `forwardRef`가 왜 있었는지, `useActionState`는 뭘 대체하는 건지 맥락 없이 마주치면 헷갈리기 쉽다.
+
+이 노트는 React 16(2017)부터 현재 최신인 **React 19.2**(2025-10-01 발표, npm 최신 버전은 19.2.8)까지 메이저 릴리스를 훑으면서, 버전마다 뭐가 깨졌고(breaking) 뭐가 새로 생겼는지를 정리한 것이다. 참고로 2026-02-24에는 React 재단이 Linux Foundation 산하로 출범했고, React Compiler도 2025-10-07에 v1.0이 나왔다. React 생태계가 지금 한창 정리되는 시기인 셈이다.
+
+---
+
+## React 16 (2017-09-26) — 재조정 엔진을 Fiber로 재작성
+
+React 16의 본질은 신규 기능이 아니라 **재조정(reconciliation) 엔진을 Fiber라는 새 아키텍처로 다시 구현**한 것이다. 이후 나온 error boundary, fragment, async rendering이 전부 이 Fiber 위에서 가능해졌다.
+
+### 새로 생긴 것
+
+- render 함수에서 배열이나 문자열을 바로 반환할 수 있게 됐다. 이전에는 무조건 단일 루트 엘리먼트로 감싸야 했다
+- **Error Boundaries**: `componentDidCatch`. 기존에 있던 실험적 API `unstable_handleError`를 대체했다. 잡히지 않은 에러는 트리 전체를 언마운트시킨다
+- **Portals**: `ReactDOM.createPortal()`
+- 알 수 없는 HTML/SVG 속성을 무시하지 않고 DOM에 그대로 전달하기 시작했다
+- SSR을 스트리밍 지원 구조로 재작성해서 React 15 대비 최대 3.8배(최신 Node 기준) 빨라졌다
+- 번들 크기가 161.7kb에서 109kb로 32% 줄었다
+- 라이선스가 BSD+특허에서 MIT로 바뀌었다. 이 변경 하나로 많은 회사가 React 도입을 검토할 수 있게 됐다
+
+### 브레이킹 체인지
+
+- 라이프사이클 메서드 안에서 호출한 `ReactDOM.render`가 null을 반환하도록 바뀌었다
+- `setState`에 null을 넘기면 리렌더를 스킵하는 등 동작이 달라졌다
+- 라이프사이클 실행 순서가 바뀌었다
+- `react/lib/*`, `react-dom/lib/*` 내부 경로와 `react-with-addons.js` 빌드가 제거됐다
+- UMD 빌드 경로가 `dist/`에서 `umd/`로 옮겨갔다
+
+### 16.x 마이너 흐름
+
+16.x는 마이너 버전마다 지금 익숙한 API들이 하나씩 추가된 시기다.
+
+- **16.3**: `React.createContext`, `createRef`, `forwardRef`, `StrictMode`, 새 라이프사이클 `getDerivedStateFromProps`/`getSnapshotBeforeUpdate`가 생기고 동시에 `componentWillMount`/`componentWillReceiveProps`/`componentWillUpdate`에 사용 중단 예고가 붙었다
+- **16.6**: `React.memo`, `React.lazy` + `Suspense`(코드 스플리팅), `contextType`, `getDerivedStateFromError`
+- **16.8 (2019-02-06): Hooks 정식 도입** — `useState`, `useReducer`, `useEffect`, `useMemo`, `useCallback`, 커스텀 훅까지 한 번에 들어왔다. 여기서 짚고 넘어갈 부분은 **브레이킹 체인지가 없었다**는 점이다. 클래스 컴포넌트를 제거할 계획도 없었고, 기존 클래스 코드와 병행 사용이 가능했다. 다만 프로젝트 안의 모든 react 패키지를 16.8 이상으로 맞춰야 Hooks가 동작했다
+- **16.9**: 16.3에서 도입된 `UNSAFE_` 별칭 대신 옛 이름을 그대로 쓰면 경고가 뜨기 시작했다. `act()`가 비동기를 지원하게 됐다
+- **16.14**: 새 JSX transform을 지원하기 시작했다
+
+재조정 엔진이 기존 스택 방식과 구체적으로 뭐가 달랐는지는 [React Fiber](/notes/react-fiber) 노트에서 따로 정리했다.
+
+---
+
+## React 17 (2020-10-20) — "새 기능 없는 릴리스"
+
+React 17은 공식적으로 개발자 대상 신규 기능이 **의도적으로 없는** 릴리스다. 목적은 하나, 점진적 업그레이드(gradual upgrade)를 가능하게 만드는 디딤돌이었다.
+
+### 변경점
+
+- **이벤트 위임 대상 변경**: 이벤트를 `document`가 아니라 React 트리가 마운트된 root DOM 컨테이너에 위임하도록 바꿨다. 이 변경 덕분에 한 페이지 안에 여러 React 버전을 중첩해서 올려도 이벤트 전파가 서로 충돌하지 않는다. 점진적 업그레이드 전략의 핵심이 이 변경이다
+- **이벤트 풀링(event pooling) 제거**: 더 이상 `e.persist()`를 호출할 필요가 없어졌다
+- **useEffect 클린업이 비동기로 바뀜**: 언마운트 시 동기 실행되던 클린업이 화면 업데이트 이후 비동기로 실행되도록 바뀌었다. 대형 앱에서 체감되는 성능 개선이다
+- 컴포넌트 스택 트레이스를 네이티브 스택 프레임으로 생성해서, 클릭 가능하고 프로덕션 빌드에서도 디코딩할 수 있게 됐다
+- react-native-web 같은 서드파티에 노출됐던 private export들을 제거했다
+
+새 기능이 없어서 재미는 없지만, 앞으로 React 18의 concurrent rendering 같은 큰 변화를 점진적으로 받아들일 수 있는 기반을 여기서 닦아둔 셈이다.
+
+---
+
+## React 18 (2022-03-29) — Concurrent Rendering
+
+React 18은 렌더링 모델 자체를 바꾼 버전이다. `createRoot` 기반의 concurrent renderer가 핵심이다.
+
+### 새로 생긴 것
+
+- `createRoot`(`react-dom/client`)를 통한 concurrent 렌더링
+- **Automatic Batching**: React 이벤트 핸들러 안에서만 되던 상태 업데이트 배치가 `setTimeout`, Promise, 네이티브 이벤트 핸들러 등 모든 곳으로 확장됐다. 배치를 원하지 않으면 `flushSync`로 옵트아웃한다
+- Transitions: `startTransition`, `useTransition`, `useDeferredValue`
+- SSR Suspense 스트리밍: Node 환경의 `renderToPipeableStream`, Edge 환경의 `renderToReadableStream`
+- 새 훅 세 개: `useId`, 외부 스토어를 concurrent 환경에서 안전하게 구독하는 `useSyncExternalStore`, CSS-in-JS를 위한 `useInsertionEffect`
+
+### 브레이킹 체인지
+
+- `ReactDOM.render`가 `createRoot`로 대체됐다. 기존 API를 계속 쓰면 React 17 호환 모드로 동작하면서 경고가 뜬다
+
+```jsx
+// before (React 17)
+import ReactDOM from "react-dom";
+ReactDOM.render(<App />, document.getElementById("root"));
+
+// after (React 18)
+import { createRoot } from "react-dom/client";
+const root = createRoot(document.getElementById("root"));
+root.render(<App />);
+```
+
+- `ReactDOM.hydrate`는 `hydrateRoot`로, `unmountComponentAtNode`는 `root.unmount()`로 바뀌었다
+- `render`의 콜백 인자가 제거됐다. Suspense와 충돌하기 때문인데, 대신 `useEffect`를 쓰면 된다
+- `renderToNodeStream`이 deprecated 되고 `renderToPipeableStream`으로 대체됐다
+- `renderToString`/`renderToStaticMarkup`이 Suspense를 만나도 더 이상 에러를 던지지 않고 fallback을 방출하도록 바뀌었다
+- **StrictMode가 강화**됐다. 개발 모드에서 mount, effect 생성, unmount, effect 정리, 재mount를 시뮬레이션한다. effect가 딱 한 번만 실행된다고 가정한 코드는 여기서 깨진다
+- 하이드레이션 불일치가 경고에서 **에러로 격상**됐다. 개별 노드를 패치하는 대신 가장 가까운 Suspense 경계까지 통째로 클라이언트 렌더로 되돌린다
+- click, keydown 같은 discrete user input으로 트리거된 effect는 항상 동기 flush된다
+- TypeScript에서 `children`을 props에 명시적으로 선언해야 한다. 암묵적 children이 제거됐다
+- IE 지원이 종료됐다. Promise, Symbol, Object.assign이 필요해졌다
+- 컴포넌트가 `undefined`를 반환해도 더 이상 경고하지 않는다
+- 언마운트된 컴포넌트에서 setState를 호출해도 경고가 사라졌다
+- `act` 경고는 `globalThis.IS_REACT_ACT_ENVIRONMENT`로 옵트인하는 방식이 됐다
+
+---
+
+## React 19 (2024-12-05) — Actions와 Server Components
+
+React 19는 폼 처리와 서버 렌더링 모델을 크게 손댄 버전이다. 여기서부터는 "React가 서버까지 아우르는 프레임워크의 기반 레이어"라는 성격이 뚜렷해진다.
+
+### 새로 생긴 것
+
+- **Actions**: async 전환을 pending, error, optimistic 상태까지 자동으로 처리해주는 개념
+- `useActionState(fn, initialState)`가 `[state, formAction, isPending]`을 반환한다
+- `<form action={fn}>`과 `formAction` prop. 성공하면 폼이 자동으로 리셋된다
+- `useFormStatus`(react-dom): 부모 form의 pending 상태를 props drilling 없이 조회할 수 있다
+- `useOptimistic`: 낙관적 UI를 구현하는 훅
+- **`use` API**: 렌더 도중에 Promise나 Context를 읽을 수 있다. 조건부로 호출해도 되는, 훅 규칙의 예외에 해당하는 API다
+- **Server Components / Server Actions**(`'use server'`)가 정식으로 채택됐다
+- **`ref`가 일반 prop이 됐다**. 함수 컴포넌트에서 더 이상 `forwardRef`가 필요 없다
+
+```jsx
+// before (React 18) — forwardRef 필요
+const Input = forwardRef((props, ref) => <input ref={ref} {...props} />);
+
+// after (React 19) — ref를 그냥 prop으로 받음
+function Input({ ref, ...props }) {
+  return <input ref={ref} {...props} />;
+}
+```
+
+- ref 콜백에서 정리(cleanup) 함수를 반환할 수 있게 됐다
+- `<Context.Provider>` 대신 `<Context>`를 Provider로 직접 사용할 수 있다 (`<Context value={...}>`)
+- **Document Metadata**: 컴포넌트 안에 그냥 써넣은 `<title>`, `<meta>`, `<link>`를 React가 자동으로 `<head>`로 끌어올려준다
+- 스타일시트에 `precedence`를 지정할 수 있고, async `<script>`는 중복 삽입이 제거된다
+- 리소스 프리로딩 API(`react-dom`): `prefetchDNS`, `preconnect`, `preload`, `preinit`
+- 커스텀 엘리먼트(Web Components)를 완전히 지원한다
+- `useDeferredValue(value, initialValue)`에 초기값 옵션이 생겼다
+- 정적 렌더용 API `prerender()`, `prerenderToNodeStream()`이 추가됐다
+- 에러 리포팅이 개선돼서 중복 로그가 사라지고, 하이드레이션 불일치는 diff 형태로 보여준다
+
+### 브레이킹 체인지
+
+- **렌더 중 에러를 더 이상 re-throw 하지 않는다.** 잡히지 않은 에러는 `window.reportError`로, 잡힌 에러는 `console.error`로 보고한다. 대신 `createRoot`/`hydrateRoot`에 `onUncaughtError`, `onCaughtError` 옵션이 생겼다
+- React 코어에서 제거된 API: `propTypes`, 함수 컴포넌트의 `defaultProps`, 레거시 Context(`contextTypes`/`getChildContext`), 문자열 ref, 모듈 패턴 팩토리 컴포넌트, `React.createFactory`, `react-test-renderer/shallow`
+- react-dom에서 제거된 API: `ReactDOM.render`, `ReactDOM.hydrate`, `unmountComponentAtNode`, **`findDOMNode`**, `react-dom/test-utils`(`act`는 이제 `react`에서 import한다)
+- `src`/`href`에 `javascript:` URL을 넣으면 에러가 난다
+- `onRecoverableError`에서 `errorInfo.digest`가 제거됐다
+- `unstable_flushControlled`, `unstable_createEventHandle`, `unstable_renderSubtreeIntoContainer`, `unstable_runWithPriority`가 제거됐다
+- **UMD 빌드가 제거**됐다. CDN으로 React를 쓰던 프로젝트는 esm.sh 같은 ESM CDN으로 옮겨야 한다
+- 새 JSX transform이 필수가 됐다
+
+### Deprecated
+
+- `element.ref` 직접 접근은 `element.props.ref`로 옮겨야 한다
+- `react-test-renderer` 패키지 자체가 사실상 폐기 수순이다. @testing-library 계열로 옮겨가는 게 권장된다
+
+### TypeScript 변경
+
+- ref 콜백에서 암묵적 반환이 금지됐다. `ref={c => (x = c)}` 처럼 쓰던 코드는 블록으로 감싸야 한다
+- `useRef()`를 인자 없이 호출할 수 없다. `useRef(undefined)`처럼 명시해야 한다
+- `ReactElement["props"]`의 기본 타입이 `any`에서 `unknown`으로 바뀌었다
+- JSX 네임스페이스를 확장하려면 `declare module "react" { namespace JSX {...} }` 형태로 모듈 확장을 써야 한다
+- `useReducer`의 타이핑이 컨텍스트 추론을 활용하도록 개선됐다
+
+마이그레이션은 공식 codemod로 상당 부분 자동화할 수 있다.
+
+```bash
+npx codemod@latest react/19/migration-recipe
+npx types-react-codemod@latest preset-19 ./src
+```
+
+브레이킹은 아니지만 체감되는 개선도 있다. StrictMode에서 이중 렌더가 일어나도 `useMemo`/`useCallback` 결과를 재사용하고, Suspense는 fallback을 즉시 커밋하면서 suspend된 형제 컴포넌트를 백그라운드에서 미리 준비해둔다.
+
+---
+
+## React 19.1 / 19.2 (2025)
+
+메이저 버전 사이의 마이너 릴리스지만 실무에 영향을 주는 변화가 있어서 따로 짚는다.
+
+### 19.1 (2025-03)
+
+- **Owner Stacks**: 개발 전용 스택 트레이스로, 어떤 컴포넌트가 지금 이 컴포넌트를 렌더했는지 추적할 수 있다. `captureOwnerStack` API로 접근한다
+- Suspense 경계 처리가 클라이언트, 서버, 하이드레이션 전 구간에서 개선됐고, 하이드레이션 스케줄링도 좋아져서 불필요한 클라이언트 렌더가 줄었다
+- `useId`가 생성하는 prefix가 `:r123:`에서 `«r123»`으로 바뀌었다. CSS 셀렉터와의 호환성 때문이다
+- `<select>` 안에 `<script>`/`<template>`을 넣을 수 있게 됐고, 반응형 이미지의 preload도 개선됐다
+- RSC 프리렌더용 `unstable_prerender`, `react-server-dom-parcel`이 추가됐다
+
+### 19.2 (2025-10-01) — 현재 최신
+
+- **`<Activity />`**: `mode="visible"`과 `mode="hidden"`을 갖는다. hidden 상태에서는 자식을 화면에서 숨기고 effect를 언마운트하지만 **상태는 유지**한다. 업데이트는 idle 시점까지 지연된다. 숨겨진 페이지를 미리 렌더해두거나 네비게이션 사이에 상태를 보존할 때 쓴다
+- **`useEffectEvent`**: Effect 안에서 "이벤트성"으로 동작하는 로직을 분리해서 의존성 배열이 비대해지는 걸 막아준다. 항상 최신 props/state를 참조하면서도 의존성 배열에는 넣지 않는다
+
+```jsx
+// before — onVisit이 바뀔 때마다 effect가 재실행됨
+useEffect(() => {
+  onVisit(roomId);
+}, [roomId, onVisit]);
+
+// after — onVisit은 항상 최신 값을 참조하지만 의존성에서 빠짐
+const onVisitEvent = useEffectEvent(onVisit);
+useEffect(() => {
+  onVisitEvent(roomId);
+}, [roomId]);
+```
+
+- **`cacheSignal`**(RSC 전용): `cache()`의 수명이 끝나는 시점을 신호로 받아서 abort나 정리 작업을 할 수 있다
+- **Performance Tracks**: Chrome DevTools에 커스텀 트랙이 추가됐다. Scheduler Track은 우선순위와 블로킹 업데이트, 페인트를 보여주고, Components Track은 마운트, effect, 렌더를 보여준다
+- **Partial Pre-rendering**(react-dom): `prerender()`로 정적인 부분을 미리 만들어두고 `resume()`으로 SSR 스트림을 이어가거나, `resumeAndPrerender()`로 SSG를 완성할 수 있다
+- SSR에서 Suspense 경계의 reveal을 배칭한다. 스트리밍 중 짧게 묶어서 한 번에 공개하는 방식으로, 클라이언트 렌더 동작과 정렬되고 이후 ViewTransition 대응도 염두에 둔 변경이다
+- Node.js에서도 Web Streams API(`renderToReadableStream`, `prerender`, `resume`, `resumeAndPrerender`)를 지원한다. 다만 성능과 압축 면에서는 여전히 Node Streams API가 권장된다
+- `eslint-plugin-react-hooks` v6이 나오면서 flat config가 기본이 됐다. React Compiler 기반 규칙은 옵트인이고, 레거시 설정은 `recommended-legacy`로 쓸 수 있다
+- `useId`의 prefix가 `«r»`에서 `_r_`로 다시 바뀌었다. View Transitions와 XML 1.0 이름 규칙 호환 때문이다
+
+---
+
+## 정리
+
+| 버전 | 날짜 | 한 줄 요약 |
+|------|------|-----------|
+| 16.0 | 2017-09-26 | 재조정 엔진을 Fiber로 재작성, Error Boundaries, Portals |
+| 17.0 | 2020-10-20 | 신규 기능 없음, 이벤트 위임 변경으로 점진적 업그레이드 기반 마련 |
+| 18.0 | 2022-03-29 | Concurrent Rendering, `createRoot`, Automatic Batching |
+| 19.0 | 2024-12-05 | Actions, Server Components, ref가 일반 prop으로 |
+| 19.1 | 2025-03 | Owner Stacks, 하이드레이션 개선 |
+| 19.2 | 2025-10-01 | `<Activity />`, `useEffectEvent`, Partial Pre-rendering |
+
+업그레이드할 때 실무적으로 챙길 부분은 이렇게 정리된다.
+
+- **16에서 17로**: 대체로 무해하다. 다만 이벤트 위임 대상이 바뀌었으니 `document`에 직접 이벤트 리스너를 걸어서 React 이벤트를 가로채던 코드가 있다면 점검이 필요하다
+- **17에서 18로**: `ReactDOM.render`를 쓰던 진입점 코드를 `createRoot`로 바꿔야 한다. StrictMode를 켜둔 상태라면 effect가 두 번 도는 걸 전제로 코드가 짜여 있는지 확인하는 게 먼저다
+- **18에서 19로**: `forwardRef`로 감싸둔 컴포넌트들을 당장 걷어낼 필요는 없지만(하위 호환됨), `findDOMNode`나 `propTypes`처럼 완전히 제거된 API를 쓰고 있었다면 마이그레이션 전에 반드시 걸린다. codemod를 먼저 돌려보는 게 시간을 아끼는 길이다
+- **19.0에서 19.1/19.2로**: 브레이킹 체인지가 사실상 없다. `useId` prefix 변경 정도가 유일하게 눈에 띄는데, CSS 셀렉터나 스냅샷 테스트에서 그 값을 하드코딩해뒀다면 걸릴 수 있다
+
+## 참고
+
+- [react.dev — Versions](https://react.dev/versions)
+- [react.dev — React 19 업그레이드 가이드](https://react.dev/blog/2024/04/25/react-19-upgrade-guide)
+- [react.dev — React v19](https://react.dev/blog/2024/12/05/react-19)
+- [React v19.1.0 릴리스 노트 (Owner Stacks)](https://github.com/facebook/react/releases/tag/v19.1.0)
+- [react.dev — React Labs: View Transitions, Activity, and more (2025-04-23)](https://react.dev/blog/2025/04/23/react-labs-view-transitions-activity-and-more)
+- [react.dev — React v19.2](https://react.dev/blog/2025/10/01/react-19-2)
