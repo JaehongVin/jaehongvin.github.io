@@ -9,7 +9,7 @@ import {
 } from './_constants/awards';
 import { EDUCATION } from './_constants/education';
 import { EXPERIENCE } from './_constants/experience';
-import { CONTACTS, SUMMARY } from './_constants/profile';
+import { CONTACTS } from './_constants/profile';
 import { SKILLS } from './_constants/skills';
 
 export const metadata: Metadata = {
@@ -35,12 +35,12 @@ const ResumePage = () => (
   <main
     className={cn('mx-auto w-full px-16 py-32', 'tb:px-24', 'dt:max-w-px-900')}
   >
-    <section className="mb-40">
+    <section className="mb-32">
       <h1 className="text-px-28 font-800 text-gray-900 tb:text-px-36">
         빈재홍
       </h1>
       <p className="mt-4 text-px-14 text-gray-500 tb:text-px-16">
-        Frontend Engineer | Product & Platform Engineering
+        Frontend Engineer
       </p>
       <ul
         className={cn(
@@ -74,9 +74,6 @@ const ResumePage = () => (
           </li>
         ))}
       </ul>
-      <p className="mt-16 text-px-14 leading-px-24 text-gray-600 tb:text-px-15">
-        {SUMMARY}
-      </p>
     </section>
 
     <section className="mb-48">
