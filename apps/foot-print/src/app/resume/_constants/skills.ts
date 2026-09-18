@@ -16,7 +16,7 @@ export const SKILLS: SkillGroup[] = [
     category: 'State & Data',
     items: 'TanStack Query, TanStack Router, Zustand, Pinia',
   },
-  { category: 'Styling', items: 'TailwindCSS, SCSS' },
+  { category: 'Styling', items: 'Tailwind CSS, SCSS' },
   {
     category: 'Platform & Tooling',
     items:

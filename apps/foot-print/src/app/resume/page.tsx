@@ -74,6 +74,12 @@ const ResumePage = () => (
           </li>
         ))}
       </ul>
+      <p className="mt-16 text-px-13 leading-px-22 text-gray-600 tb:text-px-14">
+        B2C·B2B·커머스 서비스의 프론트엔드를 개발하며, 신규 서비스 구축부터 성능
+        개선과 운영 문제 해결까지 담당했습니다. 데이터 특성에 맞춘 렌더링 설계와
+        공통 컴포넌트, 반복 업무 자동화를 통해 사용자 경험과 팀의 개발 효율을
+        개선해 왔습니다.
+      </p>
     </section>
 
     <section className="mb-48">

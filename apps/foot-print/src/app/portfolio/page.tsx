@@ -1,6 +1,8 @@
 import { cn } from '@common/ui/lib/utils';
 import type { Metadata } from 'next';
 import { SITE_URL } from '@/constants/seo';
+import { EDUCATION } from '../resume/_constants/education';
+import { SKILLS } from '../resume/_constants/skills';
 
 export const metadata: Metadata = {
   title: '포트폴리오',
@@ -32,24 +34,6 @@ const CONTACTS: ContactItem[] = [
     label: '블로그',
     value: 'jaehongvin.github.io',
     href: 'https://jaehongvin.github.io',
-  },
-];
-
-interface SkillGroup {
-  category: string;
-  items: string;
-}
-
-const SKILLS: SkillGroup[] = [
-  {
-    category: 'Frontend',
-    items:
-      'JavaScript(ES6+), TypeScript, React(Next.js), Vue(Nuxt.js), Tanstack Query, Zustand, Tailwind, SCSS',
-  },
-  { category: 'Backend', items: 'Node.js(Express)' },
-  {
-    category: 'etc',
-    items: 'Agile(Scrum, Kanban), Jira, Notion, Swagger, Figma, Sentry',
   },
 ];
 
@@ -87,27 +71,6 @@ interface CertItem {
 
 const CERTIFICATES: CertItem[] = [{ title: '정보처리기사', date: '2019.11' }];
 
-interface EducationItem {
-  school: string;
-  degree: string;
-  period: string;
-  note?: string;
-}
-
-const EDUCATION: EducationItem[] = [
-  {
-    school: '한국공학대학교',
-    degree: '정보통신공학과 학사',
-    period: '2015년 3월 - 2019년 2월',
-    note: '구 한국산업기술대학교 · 학점 3.06',
-  },
-  {
-    school: '안산공업고등학교',
-    degree: '전자과',
-    period: '2012년 3월 - 2015년 2월',
-  },
-];
-
 interface ExperienceItem {
   company: string;
   role: string;
@@ -120,22 +83,22 @@ const EXPERIENCE: ExperienceItem[] = [
   {
     company: '주식회사 웰로',
     role: 'Frontend Engineer',
-    period: '2024년 6월 - 2026년 3월',
+    period: '2024.06 ‒ 2026.03',
     description:
       '개인 맞춤형 복지 혜택 추천, 고향사랑기부제, 기업 솔루션 등 누적 이용자 500만 규모의 공공/복지 도메인 서비스를 운영하는 회사입니다. 웰로/웰로비즈/고향사랑기부제 3개 서비스와 백오피스를 아우르는 모노레포 환경에서 B2C, B2B, 커머스 등 다양한 프론트엔드 개발을 담당했습니다.',
     tech: [
       'Next.js(v14~16, App Router)',
-      'Tanstack Router',
+      'TanStack Router',
       'TypeScript',
-      'TailwindCSS',
-      'Tanstack Query',
+      'Tailwind CSS',
+      'TanStack Query',
       'Zustand',
     ],
   },
   {
     company: '주식회사 비투지게임즈',
     role: 'Frontend Engineer',
-    period: '2023년 2월 - 2024년 6월',
+    period: '2023.02 ‒ 2024.06',
     description:
       '판타지 스포츠 웹 게임 플랫폼을 운영하는 회사입니다. 카드 거래/랭킹/커뮤니티 등 게임 핵심 기능을 담당했습니다.',
     tech: ['Nuxt.js', 'TypeScript', 'Pinia'],
@@ -143,7 +106,7 @@ const EXPERIENCE: ExperienceItem[] = [
   {
     company: '빈페이지(주)',
     role: 'Full-stack Engineer',
-    period: '2020년 10월 - 2022년 7월',
+    period: '2020.10 ‒ 2022.07',
     description:
       '코딩 없이 홈페이지를 만드는 드래그앤드롭 웹 빌더 서비스를 운영하는 회사입니다. 외부 서비스 연동과 성능 개선 등 서비스 전반을 풀스택으로 담당했습니다.',
     tech: ['Node.js', 'Express', 'jQuery', 'Ajax', 'MySQL', 'AWS EC2'],
@@ -189,8 +152,8 @@ const PROJECTS: ProjectGroup[] = [
         summary:
           '웹앱 내에서 서울특별시/경기도 공공인증을 거쳐 복지 정책을 바로 신청할 수 있는 멀티스텝 플로우 구현',
         details: [
-          '서울시, 경기도 각각 다른 인증 방식에 대응하는 공공인증 연동',
-          '스텝별 상태 관리 및 이탈 방지 로직 설계',
+          '서울시·경기도의 서로 다른 인증 방식을 스텝 단위로 추상화해 공공인증 연동',
+          '흩어진 분기를 정리하고 상태 관리와 이탈 방지 로직을 한 곳으로 통합',
         ],
       },
       {
@@ -210,7 +173,7 @@ const PROJECTS: ProjectGroup[] = [
         details: [
           '상황별 정책 추천, 바우처 도우미, 고향사랑 기부제 등 도메인 기능 개발',
           '홈 화면·마이페이지 UI/UX 개편 (서비스 첫 진입점)',
-          '럭키볼 회원가입 이벤트: 다양한 인터랙션 기능 개발 (matter.js, framer-motion 활용)',
+          '럭키볼 회원가입 이벤트: 물리 기반 인터랙션 구현 (Matter.js, framer-motion 활용)',
         ],
       },
       {
@@ -219,7 +182,7 @@ const PROJECTS: ProjectGroup[] = [
         details: [
           '웹 단 브릿지 통신 모듈 관리 및 window 객체 바인딩을 통한 히스토리 백 이슈 해결',
           '네이티브앱 상단 상태바 컨트롤, 햅틱 피드백 통신 로직 개발',
-          'KB Pay 앱 연동: 외부 브라우저 ↔ 앱 간 앱스킴 정의 및 히스토리 동기화 브릿지 개발',
+          'KB Pay 앱 웹뷰에서 서브도메인을 오가는 기부 플로우를 위한 앱스킴 정의 및 히스토리 동기화 브릿지 개발',
         ],
       },
       {
@@ -229,7 +192,7 @@ const PROJECTS: ProjectGroup[] = [
         details: [
           '디자이너와 소통하며 신규 공통 컴포넌트 개발 및 기존 컴포넌트 개선',
           '디자인토큰 기반 테마 관리 및 일관성 유지',
-          'WCAG 표준 준수 UI 컴포넌트 접근성 개선',
+          'WCAG 표준에 맞춘 UI 컴포넌트 접근성 개선',
           '3개 서비스에서 공유되는 컴포넌트 라이브러리 유지보수',
         ],
       },
@@ -240,48 +203,36 @@ const PROJECTS: ProjectGroup[] = [
         problem:
           '모노레포 전체를 루트 컨텍스트 파일 하나로 설명하던 구조. 패키지별 규칙과 에이전트 산출물 검증 장치가 없던 상태.',
         approach:
-          '규칙을 루트와 패키지별로 계층화해 소유 범위·참조 우선순위·수정 금지 경로를 명시. 빌드 산출물과 생성 코드는 컨텍스트에서 제외해 토큰 낭비와 오학습 방지. 디자인 시스템 컴포넌트 우선 사용, 직접 fetch 금지 등 프론트엔드 컨벤션을 규칙으로 명문화. 타입 체크(tsc --noEmit)와 빌드를 에이전트 실행 루프에 연결해 오류 발생 시 스스로 수정 후 재검증.',
-        result:
-          '에이전트가 패키지 경계를 넘는 변경과 잘못된 패턴 학습을 차단. 패키지 간 타입 경계를 1차 방어선으로 삼아 변경 범위의 정합성을 확인하는 체계 확보.',
-        note: '에이전트가 반복해서 틀리는 케이스를 규칙으로 환원하는 사이클을 운영해 같은 유형의 재발을 줄였다.',
+          '에이전트 규칙을 루트·패키지별로 계층화해 소유 범위와 프론트엔드 컨벤션을 명시. 타입 검사·빌드를 실행 루프에 연결해 오류 수정과 재검증을 수행하도록 구성.',
+        result: '규칙과 검증 루프를 적용하고 반복 오류를 규칙에 반영하며 운영.',
+        note: null,
       },
       {
         title: 'AI 기반 에러 모니터링 자동화 파이프라인',
         problem:
           '에러 대응이 사람이 Sentry를 확인하는 시점에 시작. 확인이 늦어지면 에러를 놓치고, 원인 파악·Jira 티켓 생성·Slack 공유는 매번 수작업.',
         approach:
-          'Sentry Webhook → AWS Lambda → Claude API로 에러 분석 → Jira 티켓 자동 생성 + Slack 알림 파이프라인 구축. 프로젝트별 Jira Epic 자동 라우팅, AI 기반 심각도/원인 자동 분류. 개인 비용으로 POC 진행 후 팀에 제안하여 도입.',
+          'Sentry Webhook → AWS Lambda → Claude API로 원인·심각도 분류 → Jira Epic별 티켓 생성과 Slack 알림을 자동화. POC를 팀에 제안해 정식 도입.',
         result:
-          '사람이 확인해야 인지되던 에러를 발생 30초 안에 분류된 티켓으로 수신. 원인 분석·티켓 작성 반복 작업 제거.',
+          '에러 발생 30초 안에 분류된 티켓을 받도록 개선하고 수동 확인·티켓 작성·공유 작업을 자동화.',
         note: null,
       },
       {
-        title: 'GitLab MR AI 정적 분석 파이프라인',
+        title: '코드 리뷰·품질 검사 자동화',
         problem:
-          '코드 리뷰에 시간이 많이 소요되고, 컨벤션 위반이 리뷰에서 자주 발견됨.',
+          '레거시 lint 오류 500여 건이 쌓여 있고 코드 리뷰에서 컨벤션 위반을 반복 확인하던 상황.',
         approach:
-          'GitLab CI에서 MR 생성 시 Gemini API로 변경사항 자동 분석. Draft MR 제외, PR당 1회만 실행.',
+          'LLM으로 lint 오류를 분류해 자동·수동 수정하고 Husky·lint-staged로 커밋 시 검사. Gemini API 기반 변경사항 분석을 GitLab CI에 연동. Draft 제외·MR당 1회 실행으로 비용 통제.',
         result:
-          '컨벤션 위반, 타입 안전성, 잠재적 버그 패턴을 자동 검출. 사람은 아키텍처/설계 수준 리뷰에 집중 가능.',
-        note: '정적 분석기 보조 목적. 변경사항만으로 판단 가능한 패턴 위반 검출에 초점.',
-      },
-      {
-        title:
-          'LLM 활용 500개 이상 레거시 lint error 일괄 정리 + 코드 품질 가드',
-        problem:
-          '프로젝트에 500개 이상의 레거시 lint error가 쌓여 있어, 새 코드의 에러와 구분이 안 되는 상황.',
-        approach:
-          'LLM을 활용하여 에러를 패턴별로 분류하고, 자동 수정 가능한 것은 일괄 처리. 수동 확인이 필요한 것만 직접 수정. 정리 후 Git Hooks(Husky, lint-staged)를 가드로 도입하여 다시 쌓이지 않도록 방지.',
-        result:
-          '500개 이상 lint error 제거 완료. Husky 가드를 통해 신규 lint error 유입 차단.',
-        note: '자동 수정 후 사이드이펙트 검증은 빌드 + 기존 테스트 통과로 진행. 변경 범위가 큰 건 PR 단위로 나눠서 리뷰.',
+          '레거시 lint 오류 500여 건 정리. 커밋 시 품질 검사와 MR 변경사항 분석으로 컨벤션 위반·잠재 버그 검토를 보조.',
+        note: null,
       },
       {
         title: '상품 상세 페이지 렌더링 전략 재설계',
         problem:
-          '상품 상세 페이지 모바일 LightHouse Performance 41점. 그중 용량이 큰 영상이 포함된 페이지는 영상 영역 노출까지 길게는 5초 소요.',
+          '상품 상세 페이지 모바일 Lighthouse Performance 41점. 기존 ISR 갱신 주기가 가격·재고의 최신성 요구를 충족하지 못하는 상황.',
         approach:
-          '재고·가격의 실시간성이 필요한데 기존 ISR은 갱신 주기만큼 지난 값을 노출. SSR과 스트리밍 렌더링으로 전환. 가격·재고 등 구매 결정에 필요한 정보를 먼저 내려보내고, 상세 콘텐츠와 하단 섹션 등 느린 데이터는 Suspense 경계로 분리. 영상이 있는 페이지는 mp4에서 webm으로 자동 변환해 용량 약 40% 감소, 썸네일 선노출 후 본 영상 지연 로드, 변환 결과 디스크 캐싱.',
+          'SSR과 스트리밍 렌더링으로 전환. 구매 결정에 필요한 정보는 먼저 제공하고 상세 콘텐츠·하단 섹션은 Suspense 경계로 분리. 영상은 썸네일 선노출·지연 로드를 적용하고 MP4를 WebM으로 자동 변환해 용량을 약 40% 줄임.',
         result:
           'FCP 3.2초에서 1.2초. LCP 5.6초에서 2.1초. Performance 41점에서 82점.',
         note: '느린 쿼리 하나가 페이지 전체를 붙잡지 않도록 데이터 중요도 기준으로 Suspense 경계를 나눴다.',
@@ -293,14 +244,6 @@ const PROJECTS: ProjectGroup[] = [
           'React Swiper를 Embla로 교체 (60KB 감소). Yup에서 Zod로 교체 (타입 안전성 확보). tinycolor2, aos, qs, nanoid 등 네이티브 API 대체 (80KB 감소). knip으로 미사용 파일 130개에서 6개로, export 170개에서 0개로 제거 후, 설정 파일을 프로젝트에 추가하고 CI 파이프라인에 연동하여 미사용 코드가 다시 쌓이지 않도록 지속 관리 체계 구축.',
         result: '번들 사이즈 140KB 감소. 배포 시간 36초 단축.',
         note: null,
-      },
-      {
-        title: '크롤러 트래픽으로 인한 서버 부하 해결',
-        problem:
-          '구글봇 등 크롤러의 반복적인 슬로우쿼리 API 호출로 서버 부하 발생.',
-        approach: 'User-Agent 기반 필터링 적용.',
-        result: '백엔드 부하 50% 이상 감축.',
-        note: 'robots.txt만으로는 API 직접 호출을 막을 수 없었음. HTML 크롤링은 허용, API 엔드포인트만 필터링하여 SEO 영향 없이 해결.',
       },
       {
         title: '사이트맵 생성 로직 개선 및 빌드 최적화',
@@ -324,7 +267,8 @@ const PROJECTS: ProjectGroup[] = [
         problem: '보안 인증 심사 대응을 위한 시큐어 코딩 및 취약점 조치 필요.',
         approach:
           'ISMS-P, CSAP 인증 및 유지를 위한 시큐어 코딩 적용. 프론트엔드 단 보안 취약점 점검 및 조치.',
-        result: '인증 심사 통과 및 유지.',
+        result:
+          '프론트엔드 보안 취약점 점검·조치로 ISMS-P·CSAP 인증 대응에 참여.',
         note: null,
       },
     ],
@@ -337,10 +281,10 @@ const PROJECTS: ProjectGroup[] = [
         summary:
           '스포츠 경기별 나만의 라인업 제출, 선수 카드 업그레이드 및 거래 등 판타지 스포츠 웹 게임 개발',
         details: [
-          '사용자간 카드 거래 UI/UX 트랜잭션 플로우 개발 (카드 순환과 재참여 유도 목적)',
-          '상점, 랭킹 페이지 개발 (다양한 게임 참여 유도 및 유저간 경쟁 촉진)',
-          'tiptap 기반 리치 텍스트 에디터 구현 (사이트 체류시간 증가를 위한 유저 게시판)',
-          'chart.js 활용 통계 대시보드 개발 (선수 통계 지표 시각화)',
+          '경기별 라인업 제출, 선수 카드 업그레이드·거래 플로우 개발',
+          '상점·랭킹 페이지 개발',
+          'tiptap 기반 유저 게시판 리치 텍스트 에디터 구현',
+          'Chart.js 기반 선수 통계 대시보드로 카드 가치 판단에 필요한 지표 시각화',
           '중복되는 UI 컴포넌트화로 개발 유지보수성 및 속도 개선',
           '배포 서버 환경 관리',
         ],
@@ -356,9 +300,8 @@ const PROJECTS: ProjectGroup[] = [
       },
       {
         title: 'Vuex → Pinia 마이그레이션',
-        problem:
-          'Vue 공식 지원 라이브러리가 vuex에서 pinia로 변경. vuex는 TypeScript 지원이 불편하고 보일러플레이트가 많음.',
-        approach: '프로젝트 개발 초기에 선제적으로 pinia 마이그레이션 진행.',
+        problem: 'Vuex의 TypeScript 연동 부담과 많은 보일러플레이트.',
+        approach: '프로젝트 초기에 Pinia로 선제 마이그레이션.',
         result:
           '가독성 향상. 별도 설정 없이 TypeScript 사용 가능. 보일러플레이트 감소.',
         note: null,
@@ -375,7 +318,6 @@ const PROJECTS: ProjectGroup[] = [
         details: [
           'JSON Schema 기반 동적 컴포넌트 렌더링 시스템 개발',
           '에디터 ↔ 프리뷰 실시간 동기화 및 iframe 샌드박스 환경 구축',
-          '다양한 추가 기능 개발 및 버그 수정 (주기적 릴리즈 노트로 매달 서비스 사용량 증가)',
         ],
       },
       {
@@ -383,12 +325,10 @@ const PROJECTS: ProjectGroup[] = [
         summary:
           '웹 빌더 서비스의 확장성을 위한 외부 서비스 연동 플러그인 아키텍처 설계 및 개발',
         details: [
-          'OAuth 2.0 소셜로그인 통합 모듈 개발 (네이버, 카카오, 구글, 페이스북, 카카오 싱크) — 회원가입 전환율 34% 증가',
+          'OAuth 2.0 소셜 로그인 통합 모듈 개발',
           '애플 로그인 기능 개발 (앱스토어 심사 정책 변경 대응) — 52건 밀린 앱 심사 + 13건 신규 심사 일괄 처리',
-          '쇼핑몰 통합 관리 솔루션(사방넷) 연동 — 유료 전환율 25% 증가',
-          '인스타그램 API 연동 (게시글 동기화) — 개인 블로그/소개 사이트 등 사이트 다양성 증가',
-          '카카오톡 채널 API, 채널톡 API 연동 — CS 문의량 감소 및 사용자 활동량 증가',
-          '네이버 프리미엄 로그, 페이스북 픽셀 적용 — 마케팅 전환 추적 및 광고 비용 최적화',
+          '쇼핑몰 통합 관리 솔루션(사방넷) 연동',
+          '같은 플러그인 구조로 인스타그램 게시글 동기화·카카오톡 채널·마케팅 픽셀 연동 확장',
         ],
       },
     ],
@@ -397,8 +337,7 @@ const PROJECTS: ProjectGroup[] = [
         title: '사이트 성능 개선',
         problem:
           '긴 페이지 렌더링 시간, 느린 인터랙션 반응 속도, 가독성이 떨어지는 코드.',
-        approach:
-          '이미지 레이지 로딩, 이미지 최적화, 불필요한 동기 작업을 비동기 처리(Promise.all). 레거시 코드 제거 및 중복 로직 메소드화.',
+        approach: '이미지 지연 로딩·최적화 적용. 레거시 코드와 중복 로직 정리.',
         result:
           '사이트 제작 화면 초기 렌더링 시간 4.5초 단축. 이미지가 많은 페이지 초기 렌더링 시간 최대 1초대로 단축.',
         note: null,
@@ -433,14 +372,13 @@ const PortfolioPage = () => (
         빈재홍
       </h1>
       <p className="mt-4 text-px-14 text-gray-500 tb:text-px-16">
-        Frontend Engineer · 경력 5년+
+        Frontend Engineer
       </p>
       <p className="mt-12 text-px-14 leading-px-22 text-gray-600 tb:text-px-15">
-        빠르게 변하는 스타트업 환경에서 길이 없을 때 길을 만들며 일해 온
-        프론트엔드 엔지니어입니다. 반복되는 일은 누가 시키기 전에 자동화하고,
-        불편한 흐름은 더 나은 UX로 직접 제안하며, 느린 화면은 수치로 전후를
-        남기며 끝까지 빠르게 만듭니다. 변화에 빠르게 적응하면서 자동화와 UX·성능
-        개선으로 팀과 사용자의 경험을 함께 끌어올리는 일을 가장 좋아합니다.
+        B2C·B2B·커머스 서비스의 프론트엔드를 개발하며, 신규 서비스 구축부터 성능
+        개선과 운영 문제 해결까지 담당했습니다. 데이터 특성에 맞춘 렌더링 설계와
+        공통 컴포넌트, 반복 업무 자동화를 통해 사용자 경험과 팀의 개발 효율을
+        개선해 왔습니다.
       </p>
     </section>
 
@@ -483,7 +421,7 @@ const PortfolioPage = () => (
             key={skill.category}
             className="flex flex-col gap-px-4 tb:flex-row tb:gap-px-16"
           >
-            <span className="w-88 shrink-0 text-px-14 font-700 text-gray-700">
+            <span className="w-112 shrink-0 text-px-14 font-700 text-gray-700">
               {skill.category}
             </span>
             <span className="text-px-14 leading-px-22 text-gray-600">
