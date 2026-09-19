@@ -33,7 +33,7 @@ export const EXPERIENCE: ExperienceItem[] = [
           },
           {
             title: 'AI 기반 에러 모니터링 자동화 파이프라인',
-            body: 'Sentry 수동 확인과 에러 분석·티켓 작성·공유의 반복 작업을 줄이기 위해 자동화 파이프라인을 설계. Sentry Webhook·AWS Lambda·Claude API를 연결해 원인·심각도를 분류하고 Jira Epic별 티켓 생성과 Slack 알림을 자동화. POC를 팀에 제안해 정식 도입했으며, 에러 발생 30초 안에 분류된 티켓을 받도록 개선.',
+            body: 'Sentry 수동 확인과 에러 분석·티켓 작성·공유의 반복 작업을 줄이기 위해 자동화 파이프라인을 설계. Sentry Webhook·AWS Lambda·Claude API를 연결해 원인·심각도를 분류하고 Jira Epic별 티켓 생성과 Slack 알림을 자동화. 개인 비용으로 POC를 구축해 Webhook 수신부터 Jira 티켓 생성까지 30초 이내 처리를 테스트로 확인하고, 팀에 제안해 정식 도입. 월 약 $6의 API 비용으로 운영.',
           },
           {
             title: '코드 리뷰·품질 검사 자동화',
@@ -41,7 +41,7 @@ export const EXPERIENCE: ExperienceItem[] = [
           },
           {
             title: '3개 서비스가 공유하는 디자인 시스템',
-            body: '웰로·웰로 비즈·고향사랑기부제가 공유하는 Atomic Design 기반 React 디자인 시스템을 담당. 디자이너와 공통 컴포넌트를 설계·개선하고, 디자인 토큰 기반 테마 관리와 WCAG 표준에 맞춘 접근성 개선을 수행.',
+            body: '웰로·웰로 비즈·고향사랑기부제가 공유하는 기존 Atomic Design 기반 React 디자인 시스템의 공통 컴포넌트 추가·개선을 담당. 디자이너와 협업해 컴포넌트를 확장하고, 디자인 토큰 기반 테마 관리와 WCAG 표준에 맞춘 접근성 개선을 수행.',
           },
           {
             title: 'Flutter 웹뷰 브릿지 모듈 관리',
@@ -54,11 +54,11 @@ export const EXPERIENCE: ExperienceItem[] = [
         highlights: [
           {
             title: '상품 상세 페이지 렌더링 전략 재설계',
-            body: '기존 ISR 갱신 주기가 가격·재고의 최신성 요구를 충족하지 못해 SSR과 스트리밍 렌더링으로 전환. 구매 결정에 필요한 정보는 먼저 제공하고, 상세 콘텐츠와 하단 섹션은 Suspense 경계로 분리해 느린 쿼리가 전체 렌더링을 지연하지 않도록 설계. 영상은 썸네일 선노출과 지연 로드를 적용하고, MP4를 WebM으로 자동 변환해 용량을 약 40% 줄임. 모바일 Lighthouse Performance 41→82점, FCP 3.2→1.2초, LCP 5.6→2.1초로 개선.',
+            body: '기존 ISR 갱신 주기가 가격·재고의 최신성 요구를 충족하지 못해 SSR과 스트리밍 렌더링으로 전환. 구매 결정에 필요한 정보는 먼저 제공하고, 상세 콘텐츠와 하단 섹션은 Suspense 경계로 분리해 느린 쿼리가 전체 렌더링을 지연하지 않도록 설계. 영상은 썸네일 선노출과 지연 로드를 적용하고, MP4를 WebM으로 자동 변환해 용량을 약 40% 줄임. 동일 상품 상세 페이지를 동일 조건에서 측정한 모바일 Lighthouse 기준, Performance 41→82점, FCP 3.2→1.2초, LCP 5.6→2.1초로 개선.',
           },
           {
             title: '멀티 프로세스 Route Cache 불일치 해결',
-            body: 'PM2 cluster 환경에서 프로세스마다 Next.js Route Cache가 달라 사용자마다 다른 데이터가 보이는 문제를 해결. 커스텀 캐시 핸들러를 구현해 프로세스 간 캐시를 공유하고 동일한 데이터를 제공하도록 개선.',
+            body: 'PM2 cluster 환경에서 프로세스마다 Next.js Route Cache가 달라 사용자마다 다른 데이터가 보이는 문제를 해결. 각 프로세스가 같은 캐시를 참조하도록 Redis를 공용 저장소로 사용하는 커스텀 캐시 핸들러를 구현. 캐시를 유지하면서 프로세스 간 캐시 불일치를 해소.',
           },
           {
             title: '사이트맵 생성 구조 개선과 빌드 최적화',

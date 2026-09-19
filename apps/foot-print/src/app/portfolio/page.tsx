@@ -188,7 +188,7 @@ const PROJECTS: ProjectGroup[] = [
       {
         title: '디자인 시스템 유지보수 및 확장',
         summary:
-          'Atomic Design Pattern 기반 React 디자인 시스템의 유지보수 및 신규 컴포넌트 확장',
+          '3개 서비스가 공유하는 기존 Atomic Design 기반 React 디자인 시스템의 공통 컴포넌트 추가·개선 담당',
         details: [
           '디자이너와 소통하며 신규 공통 컴포넌트 개발 및 기존 컴포넌트 개선',
           '디자인토큰 기반 테마 관리 및 일관성 유지',
@@ -212,9 +212,9 @@ const PROJECTS: ProjectGroup[] = [
         problem:
           '에러 대응이 사람이 Sentry를 확인하는 시점에 시작. 확인이 늦어지면 에러를 놓치고, 원인 파악·Jira 티켓 생성·Slack 공유는 매번 수작업.',
         approach:
-          'Sentry Webhook → AWS Lambda → Claude API로 원인·심각도 분류 → Jira Epic별 티켓 생성과 Slack 알림을 자동화. POC를 팀에 제안해 정식 도입.',
+          'Sentry Webhook → AWS Lambda → Claude API로 원인·심각도 분류 → Jira Epic별 티켓 생성과 Slack 알림을 자동화. 개인 비용으로 POC를 구축해 팀에 제안.',
         result:
-          '에러 발생 30초 안에 분류된 티켓을 받도록 개선하고 수동 확인·티켓 작성·공유 작업을 자동화.',
+          'POC 테스트에서 Webhook 수신부터 Jira 티켓 생성까지 30초 이내 처리를 확인하고 정식 도입. 월 약 $6의 API 비용으로 운영.',
         note: null,
       },
       {
@@ -234,7 +234,7 @@ const PROJECTS: ProjectGroup[] = [
         approach:
           'SSR과 스트리밍 렌더링으로 전환. 구매 결정에 필요한 정보는 먼저 제공하고 상세 콘텐츠·하단 섹션은 Suspense 경계로 분리. 영상은 썸네일 선노출·지연 로드를 적용하고 MP4를 WebM으로 자동 변환해 용량을 약 40% 줄임.',
         result:
-          'FCP 3.2초에서 1.2초. LCP 5.6초에서 2.1초. Performance 41점에서 82점.',
+          '동일 상품 상세 페이지를 동일 조건에서 측정한 모바일 Lighthouse 기준, Performance 41→82점, FCP 3.2→1.2초, LCP 5.6→2.1초로 개선.',
         note: '느린 쿼리 하나가 페이지 전체를 붙잡지 않도록 데이터 중요도 기준으로 Suspense 경계를 나눴다.',
       },
       {
@@ -258,8 +258,9 @@ const PROJECTS: ProjectGroup[] = [
         title: 'Next.js Route Cache 멀티 프로세스 캐시 불일치 해결',
         problem:
           'PM2 cluster 환경에서 프로세스별 캐시가 달라 사용자마다 다른 데이터가 보이는 이슈.',
-        approach: '커스텀 캐시 핸들러를 구현하여 프로세스 간 캐시 공유.',
-        result: '캐시 불일치 이슈 해결. 모든 프로세스에서 동일한 데이터 제공.',
+        approach:
+          '각 프로세스가 같은 캐시를 참조하도록 Redis를 공용 저장소로 사용하는 커스텀 캐시 핸들러를 구현.',
+        result: '캐시를 유지하면서 프로세스 간 캐시 불일치를 해소.',
         note: null,
       },
       {
